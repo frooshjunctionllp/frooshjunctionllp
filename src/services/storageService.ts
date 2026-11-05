@@ -915,7 +915,7 @@ class StorageService {
     }
   }
 
-  public createOnlineOrder(order: OnlineOrder): OnlineOrder {
+  public async createOnlineOrder(order: OnlineOrder): Promise<OnlineOrder> {
     const list = this.getOnlineOrders();
     const existingIndex = list.findIndex((o) => o.id === order.id);
     if (existingIndex >= 0) {
@@ -948,23 +948,31 @@ class StorageService {
       });
     }
 
-    // Persist to MongoDB in background
+    // Persist to MongoDB with real await
     if (this.isBrowser()) {
-      fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(order),
-      }).catch((e) => console.warn("Background order POST error:", e));
+      try {
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(order),
+        });
+        const data = await res.json();
+        if (data.success && data.order) {
+          return data.order;
+        }
+      } catch (e) {
+        console.warn("MongoDB order sync warning:", e);
+      }
     }
 
     return order;
   }
 
-  public updateOrderStatus(
+  public async updateOrderStatus(
     orderId: string,
     status: OrderStatus,
     modifications?: { items?: any[]; total?: number; notes?: string }
-  ): OnlineOrder | null {
+  ): Promise<OnlineOrder | null> {
     const list = this.getOnlineOrders();
     const order = list.find((o) => o.id === orderId);
     if (order) {
@@ -979,15 +987,19 @@ class StorageService {
 
       // Persist status change / modifications to MongoDB
       if (this.isBrowser()) {
-        fetch("/api/orders", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: orderId,
-            orderStatus: status,
-            ...modifications,
-          }),
-        }).catch((e) => console.warn("Background order PATCH error:", e));
+        try {
+          await fetch("/api/orders", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: orderId,
+              orderStatus: status,
+              ...modifications,
+            }),
+          });
+        } catch (e) {
+          console.warn("Background order PATCH error:", e);
+        }
       }
 
       return order;

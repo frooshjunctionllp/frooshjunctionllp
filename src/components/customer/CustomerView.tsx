@@ -93,6 +93,13 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
   };
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam === "menu" || tabParam === "monitor" || tabParam === "offers" || tabParam === "contact" || tabParam === "home") {
+        setActiveTab(tabParam as any);
+      }
+    }
     refreshCustomerState();
     // Poll orders from MongoDB in background
     storageService.syncOrdersFromMongo().then((orders) => {
@@ -270,19 +277,33 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2">
             {/* Passenger Rail Pass / Register Button */}
-            <button
-              onClick={() => setIsPassModalOpen(true)}
-              className="bg-slate-950 hover:bg-slate-900 text-amber-300 border-2 border-slate-950 px-2.5 sm:px-3 py-1.5 rounded-lg font-mono text-xs font-bold shadow-[2px_2px_0px_#000] flex items-center gap-1.5 transition-all cursor-pointer"
-            >
-              <Ticket className="w-3.5 h-3.5" />
-              {currentPass ? (
+            {currentPass ? (
+              <button
+                onClick={() => setIsPassModalOpen(true)}
+                className="bg-slate-950 hover:bg-slate-900 text-amber-300 border-2 border-slate-950 px-2.5 sm:px-3 py-1.5 rounded-lg font-mono text-xs font-bold shadow-[2px_2px_0px_#000] flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Ticket className="w-3.5 h-3.5" />
                 <span className="truncate max-w-24 sm:max-w-none">
                   {currentPass.name.split(" ")[0]} ({currentPass.pnr})
                 </span>
-              ) : (
-                <span>Register Pass</span>
-              )}
-            </button>
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5 font-mono">
+                <a
+                  href="/register"
+                  className="bg-slate-950 hover:bg-slate-900 text-amber-300 border-2 border-slate-950 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold shadow-[2px_2px_0px_#000] flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Ticket className="w-3.5 h-3.5" />
+                  <span>Register</span>
+                </a>
+                <a
+                  href="/login"
+                  className="bg-amber-300/80 hover:bg-amber-300 text-slate-950 border-2 border-slate-950 px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold shadow-[2px_2px_0px_#000] transition-all cursor-pointer"
+                >
+                  Sign In
+                </a>
+              </div>
+            )}
 
             {/* Cart / Ticket Button */}
             <button

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { OnlineOrder, OrderStatus } from "@/types";
+import { OnlineOrder, OrderStatus, AuthSession } from "@/types";
 import { storageService } from "@/services/storageService";
 import { audioService } from "@/lib/audioService";
 import {
@@ -17,12 +17,29 @@ import {
   MapPin,
 } from "lucide-react";
 
-export const KitchenDisplayScreen: React.FC = () => {
-  const [orders, setOrders] = useState<OnlineOrder[]>([]);
+interface KitchenDisplayScreenProps {
+  orders?: OnlineOrder[];
+  currentUser?: AuthSession | null;
+  onUpdateStatus?: (orderId: string, status: OrderStatus) => void;
+}
+
+export const KitchenDisplayScreen: React.FC<KitchenDisplayScreenProps> = ({
+  orders: propOrders,
+  currentUser,
+  onUpdateStatus: propOnUpdateStatus,
+}) => {
+  const [internalOrders, setInternalOrders] = useState<OnlineOrder[]>([]);
   const [filter, setFilter] = useState<"all" | "active" | "ready">("active");
 
-  const refreshOrders = () => {
-    setOrders(storageService.getOnlineOrders());
+  const effectiveOrders = propOrders && propOrders.length > 0 ? propOrders : internalOrders;
+
+  const refreshOrders = async () => {
+    try {
+      const live = await storageService.syncOrdersFromMongo();
+      setInternalOrders(live);
+    } catch {
+      setInternalOrders(storageService.getOnlineOrders());
+    }
   };
 
   useEffect(() => {
@@ -31,12 +48,15 @@ export const KitchenDisplayScreen: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleUpdateStatus = (orderId: string, newStatus: OrderStatus) => {
-    storageService.updateOrderStatus(orderId, newStatus);
+  const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
+    await storageService.updateOrderStatus(orderId, newStatus);
     if (newStatus === "ready") {
       audioService.playStationChime();
     }
-    refreshOrders();
+    if (propOnUpdateStatus) {
+      propOnUpdateStatus(orderId, newStatus);
+    }
+    await refreshOrders();
   };
 
   const handleChimeOrder = (ticketId: string) => {
@@ -48,7 +68,9 @@ export const KitchenDisplayScreen: React.FC = () => {
     );
   };
 
-  const filteredOrders = orders.filter((o) => {
+  const isWorker = currentUser?.role === "worker";
+
+  const filteredOrders = effectiveOrders.filter((o) => {
     if (filter === "active")
       return o.orderStatus !== "completed" && o.orderStatus !== "cancelled";
     if (filter === "ready") return o.orderStatus === "ready";
@@ -83,7 +105,7 @@ export const KitchenDisplayScreen: React.FC = () => {
                 : "bg-slate-900 text-slate-300 border-slate-700"
             }`}
           >
-            Active Tickets ({orders.filter((o) => o.orderStatus !== "completed").length})
+            Active Tickets ({effectiveOrders.filter((o) => o.orderStatus !== "completed").length})
           </button>
           <button
             onClick={() => setFilter("ready")}
@@ -93,7 +115,7 @@ export const KitchenDisplayScreen: React.FC = () => {
                 : "bg-slate-900 text-slate-300 border-slate-700"
             }`}
           >
-            Ready at Counter ({orders.filter((o) => o.orderStatus === "ready").length})
+            Ready at Counter ({effectiveOrders.filter((o) => o.orderStatus === "ready").length})
           </button>
           <button
             onClick={() => setFilter("all")}
@@ -151,7 +173,10 @@ export const KitchenDisplayScreen: React.FC = () => {
                     <span className="text-[10px] font-bold block uppercase">
                       PNR: {order.pnr}
                     </span>
-                    <span className="text-xs font-black">₹{order.total}</span>
+                    {/* Hide sales / cost for worker view */}
+                    {!isWorker && (
+                      <span className="text-xs font-black">₹{order.total}</span>
+                    )}
                   </div>
                 </div>
 
@@ -190,7 +215,7 @@ export const KitchenDisplayScreen: React.FC = () => {
                                 {item.customization.iceLevel}
                               </strong>
                             </div>
-                            {item.customization.addons.length > 0 && (
+                            {item.customization.addons && item.customization.addons.length > 0 && (
                               <div className="text-amber-800 font-bold">
                                 Boosters: {item.customization.addons.join(", ")}
                               </div>
@@ -224,19 +249,19 @@ export const KitchenDisplayScreen: React.FC = () => {
                     {order.orderStatus === "accepted" && (
                       <button
                         onClick={() => handleUpdateStatus(order.id, "preparing")}
-                        className="col-span-2 bg-amber-400 hover:bg-amber-500 text-slate-950 border border-slate-950 font-black py-2 rounded-lg transition-colors cursor-pointer"
+                        className="col-span-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2 rounded-lg transition-colors cursor-pointer"
                       >
-                        Start Preparing (Blenders On)
+                        Start Juicing / Blending
                       </button>
                     )}
 
                     {order.orderStatus === "preparing" && (
                       <button
                         onClick={() => handleUpdateStatus(order.id, "ready")}
-                        className="col-span-2 bg-red-600 hover:bg-red-700 text-white font-black py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                       >
-                        <Bell className="w-4 h-4 animate-bounce" />
-                        <span>Mark Ready (Play Chimes)</span>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Mark Ready at Counter</span>
                       </button>
                     )}
 
@@ -244,25 +269,19 @@ export const KitchenDisplayScreen: React.FC = () => {
                       <>
                         <button
                           onClick={() => handleChimeOrder(order.id)}
-                          className="bg-amber-400 hover:bg-amber-500 text-slate-950 border border-slate-950 font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer text-[11px]"
-                          title="Broadcast Station Chime"
+                          className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold py-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1"
                         >
                           <Volume2 className="w-3.5 h-3.5" />
                           <span>Announce</span>
                         </button>
                         <button
                           onClick={() => handleUpdateStatus(order.id, "completed")}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition-colors cursor-pointer text-[11px]"
+                          className="bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold py-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1"
                         >
-                          Delivered ✓
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Delivered</span>
                         </button>
                       </>
-                    )}
-
-                    {order.orderStatus === "completed" && (
-                      <div className="col-span-2 text-center text-[11px] text-emerald-700 font-bold py-1">
-                        ✓ Journey Completed
-                      </div>
                     )}
                   </div>
                 </div>

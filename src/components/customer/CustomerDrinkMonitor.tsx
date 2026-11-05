@@ -156,13 +156,21 @@ export const CustomerDrinkMonitor: React.FC<CustomerDrinkMonitorProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={onOpenRegister}
-          className="bg-red-600 hover:bg-red-700 text-white font-mono font-black text-sm px-6 py-3 rounded-xl border-2 border-slate-950 shadow-[3px_3px_0px_#000] hover:shadow-none transition-all flex items-center gap-2 mx-auto cursor-pointer"
-        >
-          <span>Register / Log In with Phone</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a
+            href="/register"
+            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-mono font-black text-xs sm:text-sm px-5 py-3 rounded-xl border-2 border-slate-950 shadow-[3px_3px_0px_#000] hover:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>Create New Drink Pass</span>
+            <ArrowRight className="w-4 h-4" />
+          </a>
+          <a
+            href="/login"
+            className="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono font-black text-xs sm:text-sm px-5 py-3 rounded-xl border-2 border-slate-950 shadow-[3px_3px_0px_#000] hover:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>Sign In with Phone</span>
+          </a>
+        </div>
       </div>
     );
   }

@@ -100,18 +100,21 @@ export const Header: React.FC<HeaderProps> = ({
       label: "Contests & Deals",
       shortLabel: "Contests",
       icon: <Trophy className="w-4 h-4" />,
+      adminOnly: true,
     },
     {
       id: "menu",
       label: "Menu & Items",
       shortLabel: "Menu",
       icon: <Layers className="w-4 h-4" />,
+      adminOnly: true,
     },
     {
       id: "customers",
       label: "Customers",
       shortLabel: "Clients",
       icon: <Users className="w-4 h-4" />,
+      adminOnly: true,
     },
     {
       id: "workers",

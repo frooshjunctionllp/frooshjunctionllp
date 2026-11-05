@@ -215,7 +215,7 @@ export const NewOrderNotificationModal: React.FC<NewOrderNotificationModalProps>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs font-black uppercase text-slate-900">
               <span>Ordered Drinks ({activeOrder.items.length})</span>
-              <span>Total: ₹{isModifying ? modifiedTotal : activeOrder.total}</span>
+              {isAdmin && <span>Total: ₹{isModifying ? modifiedTotal : activeOrder.total}</span>}
             </div>
 
             {/* Normal Item View vs Modify Mode */}
@@ -245,9 +245,11 @@ export const NewOrderNotificationModal: React.FC<NewOrderNotificationModalProps>
                         </div>
                       )}
                     </div>
-                    <span className="font-mono font-bold text-slate-900">
-                      ₹{item.total}
-                    </span>
+                    {isAdmin && (
+                      <span className="font-mono font-bold text-slate-900">
+                        ₹{item.total}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -266,9 +268,11 @@ export const NewOrderNotificationModal: React.FC<NewOrderNotificationModalProps>
                       <span className="font-bold text-slate-950 block">
                         {item.productName} ({item.variantName})
                       </span>
-                      <span className="text-[10px] text-slate-500 font-mono">
-                        ₹{item.total}
-                      </span>
+                      {isAdmin && (
+                        <span className="text-[10px] text-slate-500 font-mono">
+                          ₹{item.total}
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-1.5 font-mono">

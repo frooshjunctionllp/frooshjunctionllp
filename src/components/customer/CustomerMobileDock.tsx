@@ -85,7 +85,13 @@ export const CustomerMobileDock: React.FC<CustomerMobileDockProps> = ({
 
         {/* Profile / Register Tab */}
         <button
-          onClick={onOpenProfile}
+          onClick={() => {
+            if (currentPass) {
+              onOpenProfile();
+            } else if (typeof window !== "undefined") {
+              window.location.href = "/register";
+            }
+          }}
           className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-amber-300 hover:text-white transition-all cursor-pointer"
         >
           <User className="w-4 h-4" />

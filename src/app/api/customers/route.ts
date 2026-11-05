@@ -3,9 +3,45 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { INITIAL_CUSTOMERS } from "@/lib/seedData";
 import { Customer } from "@/types";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const phone = searchParams.get("phone");
+    const id = searchParams.get("id");
+
     const { db } = await connectToDatabase();
+
+    if (phone) {
+      const cleanPhone = phone.trim().replace(/[\s-]/g, "");
+      const customer = await db.collection("customers").findOne({
+        $or: [
+          { phone: cleanPhone },
+          { phone: phone.trim() },
+          { phone: { $regex: cleanPhone } },
+        ],
+      });
+      if (customer) {
+        const { _id, ...rest } = customer;
+        return NextResponse.json({ success: true, customer: rest });
+      }
+      return NextResponse.json(
+        { success: false, message: "Customer not found" },
+        { status: 404 }
+      );
+    }
+
+    if (id) {
+      const customer = await db.collection("customers").findOne({ id });
+      if (customer) {
+        const { _id, ...rest } = customer;
+        return NextResponse.json({ success: true, customer: rest });
+      }
+      return NextResponse.json(
+        { success: false, message: "Customer not found" },
+        { status: 404 }
+      );
+    }
+
     const customers = await db
       .collection("customers")
       .find({})

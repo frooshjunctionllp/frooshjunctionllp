@@ -85,7 +85,7 @@ export const TicketCheckoutModal: React.FC<TicketCheckoutModalProps> = ({
     }
   };
 
-  const handleSubmitOrder = () => {
+  const handleSubmitOrder = async () => {
     if (cartItems.length === 0) return;
     setPhoneError("");
 
@@ -135,7 +135,7 @@ export const TicketCheckoutModal: React.FC<TicketCheckoutModalProps> = ({
       estimatedMinutes: 8,
     };
 
-    const saved = storageService.createOnlineOrder(newOrder);
+    const saved = await storageService.createOnlineOrder(newOrder);
     onUpdateCart([]);
     setIsSubmitting(false);
     onOrderPlaced(saved);
