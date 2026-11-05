@@ -49,7 +49,7 @@ import {
 interface CustomerViewProps {
   categories: Category[];
   products: Product[];
-  onOpenStaffLogin: () => void;
+  onOpenStaffLogin?: () => void;
 }
 
 export const CustomerView: React.FC<CustomerViewProps> = ({
@@ -182,12 +182,6 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
           <span className="text-amber-300 font-black">
             {stationTime || "16:00:00"} IST
           </span>
-          <button
-            onClick={onOpenStaffLogin}
-            className="text-[10px] bg-slate-800 hover:bg-slate-700 text-amber-200 px-2 py-0.5 rounded font-mono border border-slate-700 cursor-pointer"
-          >
-            Staff Portal
-          </button>
         </div>
       </div>
 

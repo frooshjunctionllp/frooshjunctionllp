@@ -13,8 +13,7 @@ export async function GET() {
       .toArray();
 
     if (customers.length === 0) {
-      await db.collection("customers").insertMany(INITIAL_CUSTOMERS as any);
-      return NextResponse.json({ success: true, data: INITIAL_CUSTOMERS });
+      return NextResponse.json({ success: true, data: [] });
     }
 
     const cleaned = customers.map(({ _id, ...rest }) => rest);

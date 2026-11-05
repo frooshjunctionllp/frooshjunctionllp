@@ -4,10 +4,25 @@ try {
 } catch (e) {}
 
 const { MongoClient } = require("mongodb");
+const fs = require("fs");
+const path = require("path");
 
-const uri =
-  process.env.MONGODB_URI ||
-  "mongodb+srv://frooshjunctionllp_db_user:4Xi4clN1yKd0EBxX@frooshjunction.s7l78r1.mongodb.net/frooshjunction?retryWrites=true&w=majority";
+if (!process.env.MONGODB_URI) {
+  try {
+    const envPath = path.resolve(__dirname, "../.env.local");
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, "utf8");
+      const match = envContent.match(/MONGODB_URI=(.*)/);
+      if (match) process.env.MONGODB_URI = match[1].trim();
+    }
+  } catch (e) {}
+}
+
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+  console.error("Missing MONGODB_URI in environment or .env.local");
+  process.exit(1);
+}
 
 async function seed() {
   const client = new MongoClient(uri);

@@ -132,70 +132,7 @@ export const INITIAL_OFFERS: ContestOffer[] = [
   },
 ];
 
-export const INITIAL_PASSES: CustomerPass[] = [
-  {
-    id: "pass-1001",
-    pnr: "FJ-1001",
-    name: "Rahul Sen",
-    pin: "1234",
-    phone: "9830112233",
-    stats: {
-      totalJuices: 6,
-      totalShakes: 21,
-      totalOrders: 14,
-      totalSpent: 3150,
-      favoriteItem: "Belgian Chocolate Fantasy",
-    },
-    createdAt: "2026-10-01T10:00:00.000Z",
-    lastActiveAt: "2026-10-29T16:20:00.000Z",
-  },
-  {
-    id: "pass-1002",
-    pnr: "FJ-1002",
-    name: "Pooja Banerjee",
-    pin: "4321",
-    phone: "9831223344",
-    stats: {
-      totalJuices: 16,
-      totalShakes: 18,
-      totalOrders: 19,
-      totalSpent: 3900,
-      favoriteItem: "Mango Tango Zest",
-    },
-    createdAt: "2026-10-02T11:30:00.000Z",
-    lastActiveAt: "2026-10-30T14:10:00.000Z",
-  },
-  {
-    id: "pass-1003",
-    pnr: "FJ-1003",
-    name: "Sourav Mukherjee",
-    pin: "9988",
-    stats: {
-      totalJuices: 4,
-      totalShakes: 14,
-      totalOrders: 9,
-      totalSpent: 2200,
-      favoriteItem: "Lotus Biscoff Crunch Shake",
-    },
-    createdAt: "2026-10-05T12:00:00.000Z",
-    lastActiveAt: "2026-10-28T18:40:00.000Z",
-  },
-  {
-    id: "pass-1004",
-    pnr: "FJ-1004",
-    name: "Ananya Roy",
-    pin: "5566",
-    stats: {
-      totalJuices: 12,
-      totalShakes: 9,
-      totalOrders: 11,
-      totalSpent: 2450,
-      favoriteItem: "Nagpur Orange Sunrise",
-    },
-    createdAt: "2026-10-06T15:20:00.000Z",
-    lastActiveAt: "2026-10-30T12:15:00.000Z",
-  },
-];
+export const INITIAL_PASSES: CustomerPass[] = [];
 
 
 /**

@@ -24,9 +24,7 @@ export async function GET(req: Request) {
       .toArray();
 
     if (sales.length === 0) {
-      const initial = getInitialSales();
-      await db.collection("sales").insertMany(initial as any);
-      return NextResponse.json({ success: true, data: initial });
+      return NextResponse.json({ success: true, data: [] });
     }
 
     const cleaned = sales.map(({ _id, ...rest }) => rest);

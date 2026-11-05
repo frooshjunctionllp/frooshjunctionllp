@@ -22,16 +22,16 @@ export async function GET() {
     const workerCount = await db.collection("workers").countDocuments();
     const offersCount = await db.collection("offers").countDocuments();
 
-    if (catCount === 0) {
+    if (catCount === 0 && INITIAL_CATEGORIES.length > 0) {
       await db.collection("categories").insertMany(INITIAL_CATEGORIES as any);
     }
-    if (prodCount === 0) {
+    if (prodCount === 0 && INITIAL_PRODUCTS.length > 0) {
       await db.collection("products").insertMany(INITIAL_PRODUCTS as any);
     }
-    if (custCount === 0) {
+    if (custCount === 0 && INITIAL_CUSTOMERS.length > 0) {
       await db.collection("customers").insertMany(INITIAL_CUSTOMERS as any);
     }
-    if (salesCount === 0) {
+    if (salesCount === 0 && getInitialSales().length > 0) {
       const sales = getInitialSales();
       await db.collection("sales").insertMany(sales as any);
     }
@@ -40,7 +40,7 @@ export async function GET() {
         .collection("workers")
         .insertMany([DEFAULT_ADMIN, BACKUP_ADMIN, ...INITIAL_WORKERS] as any);
     }
-    if (offersCount === 0) {
+    if (offersCount === 0 && INITIAL_OFFERS.length > 0) {
       await db.collection("offers").insertMany(INITIAL_OFFERS as any);
     }
 
