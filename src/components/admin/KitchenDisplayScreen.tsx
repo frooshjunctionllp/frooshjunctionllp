@@ -87,10 +87,10 @@ export const KitchenDisplayScreen: React.FC<KitchenDisplayScreenProps> = ({
           </div>
           <div>
             <h2 className="text-lg font-black uppercase tracking-wider text-white">
-              Platform Kitchen Display • Station KDS
+              Live Customer Orders • Ticket Dispatch
             </h2>
             <p className="text-[11px] text-amber-200/80">
-              Live Customer QR & Online Ticket Dispatch System
+              Live Customer Orders & Kitchen Dispatch
             </p>
           </div>
         </div>

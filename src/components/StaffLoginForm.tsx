@@ -10,9 +10,7 @@ import {
   ArrowRight,
   AlertCircle,
   ChefHat,
-  Sparkles,
   CheckCircle2,
-  Coffee,
 } from "lucide-react";
 
 interface StaffLoginFormProps {
@@ -26,10 +24,11 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
   workers,
   onBackToCustomer,
 }) => {
-  const [username, setUsername] = useState("worker1");
-  const [pin, setPin] = useState("1234");
+  const [username, setUsername] = useState("");
+  const [pin, setPin] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +38,7 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
     const inputPin = pin.trim();
 
     if (!inputUser || !inputPin) {
-      setErrorMsg("Please enter both Worker ID / Username and PIN.");
+      setErrorMsg("Please enter both Worker ID/Username and PIN.");
       return;
     }
 
@@ -54,10 +53,15 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
 
       const data = await res.json();
       if (data.success && data.user) {
+        setIsSuccess(true);
         onLoginSuccess(data.user);
+        setTimeout(() => {
+          window.location.href = "/staff";
+        }, 700);
         return;
       } else {
         setErrorMsg(data.message || "Invalid Worker credentials. Check ID and PIN.");
+        setIsLoading(false);
       }
     } catch {
       // Local fallback check
@@ -72,26 +76,24 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
         if (!matched.isActive) {
           setErrorMsg("Account is currently disabled. Contact Admin.");
         } else {
-          onLoginSuccess({
+          const session = {
             id: matched.id,
             username: matched.username,
             name: matched.name,
             role: matched.role,
-          });
+          };
+          setIsSuccess(true);
+          onLoginSuccess(session);
+          setTimeout(() => {
+            window.location.href = "/staff";
+          }, 700);
           return;
         }
       } else {
         setErrorMsg("Incorrect Worker ID or PIN.");
       }
-    } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleQuickFill = (user: string, pass: string) => {
-    setUsername(user);
-    setPin(pass);
-    setErrorMsg("");
   };
 
   return (
@@ -99,22 +101,18 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
       <div className="w-full max-w-md mx-auto relative z-10">
         {/* Brand Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-600 text-white rounded-2xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-3">
-            <ChefHat className="w-6 h-6" />
-          </div>
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <span className="font-pixel text-xl text-red-600 tracking-wider">
-              FROOSH
-            </span>
-            <span className="font-pixel text-xl text-slate-900 tracking-wider">
-              JUNCTION
-            </span>
+          <div className="flex justify-center mb-3">
+            <img
+              src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
+              alt="Froosh Junction"
+              className="h-16 w-auto object-contain drop-shadow-sm"
+            />
           </div>
           <h1 className="font-mono text-base font-black text-slate-900 uppercase tracking-tight">
             Staff & Barista Terminal
           </h1>
           <p className="text-xs text-slate-600 font-mono mt-0.5">
-            Order Intake (POS) & Kitchen KDS Dispatch Only
+            Order Intake & Orders Dispatch
           </p>
           {onBackToCustomer && (
             <div className="pt-2">
@@ -131,98 +129,100 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
 
         {/* Card */}
         <div className="bg-white border-3 border-slate-900 rounded-3xl shadow-[5px_5px_0px_#0f172a] p-6 sm:p-8">
-          <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 font-mono">
-            <div className="flex items-center gap-2 font-bold mb-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Shift Sign In</span>
-            </div>
-            <p className="text-[11px] text-emerald-700">
-              Staff members can take counter orders and confirm live tickets. Sales & financial reports are restricted.
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4 font-mono">
-            {errorMsg && (
-              <div className="p-3 bg-red-50 border-2 border-red-300 rounded-xl text-red-700 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
-                <span>{errorMsg}</span>
+          {isSuccess ? (
+            /* High-End Sleek Branded Redirect Loader */
+            <div className="text-center py-6 space-y-4 font-mono animate-in fade-in zoom-in-95 duration-200">
+              <div className="relative inline-flex items-center justify-center w-20 h-20 mx-auto">
+                <div className="absolute inset-0 rounded-full border-4 border-amber-400 border-t-emerald-600 animate-spin" />
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center border-2 border-emerald-500">
+                  <ChefHat className="w-7 h-7" />
+                </div>
               </div>
-            )}
-
-            {/* Username / Worker ID */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-slate-500" />
-                <span>Worker ID / Username</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g. worker1"
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border-2 border-slate-300 focus:border-slate-900 focus:ring-0 outline-none transition-all bg-slate-50 focus:bg-white"
-              />
+              <div className="space-y-1">
+                <h2 className="text-lg font-black text-slate-900 uppercase">
+                  Shift Active
+                </h2>
+                <p className="text-xs text-emerald-700 font-bold">
+                  Opening Register & Orders Board...
+                </p>
+              </div>
+              <div className="w-48 h-1.5 bg-slate-100 rounded-full mx-auto overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full animate-pulse" style={{ width: "90%" }} />
+              </div>
             </div>
+          ) : (
+            <>
+              <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 font-mono">
+                <div className="flex items-center gap-2 font-bold mb-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Shift Sign In</span>
+                </div>
+                <p className="text-[11px] text-emerald-700">
+                  Staff members can punch in orders and confirm live tickets. Sales & financial reports are restricted.
+                </p>
+              </div>
 
-            {/* PIN */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                <KeyRound className="w-3.5 h-3.5 text-slate-500" />
-                <span>Security PIN</span>
-              </label>
-              <input
-                type="password"
-                required
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                placeholder="••••"
-                className="w-full px-3.5 py-2.5 text-sm rounded-xl border-2 border-slate-300 focus:border-slate-900 focus:ring-0 outline-none transition-all bg-slate-50 focus:bg-white tracking-widest"
-              />
-            </div>
+              <form onSubmit={handleSubmit} className="space-y-4 font-mono">
+                {errorMsg && (
+                  <div className="p-3 bg-red-50 border-2 border-red-300 rounded-xl text-red-700 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full mt-2 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-black text-sm uppercase tracking-wider rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_#0f172a] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#0f172a] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-            >
-              {isLoading ? (
-                <span>Authorizing...</span>
-              ) : (
-                <>
-                  <LogIn className="w-4 h-4" />
-                  <span>Clock In & Open Register</span>
-                </>
-              )}
-            </button>
-          </form>
+                {/* Username / Worker ID */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Worker ID / Username</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter Worker ID or username"
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border-2 border-slate-300 focus:border-slate-900 focus:ring-0 outline-none transition-all bg-slate-50 focus:bg-white"
+                  />
+                </div>
 
-          {/* Quick Staff Shift Switcher */}
-          <div className="mt-5 pt-4 border-t border-slate-200">
-            <span className="text-[10px] font-bold uppercase text-slate-500 font-mono block mb-2 text-center">
-              Active Shift Quick Login
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickFill("worker1", "1234")}
-                className="p-2 border-2 border-slate-200 hover:border-slate-900 rounded-xl bg-slate-50 hover:bg-white text-left transition-all cursor-pointer font-mono"
-              >
-                <div className="text-xs font-black text-slate-900">Aakash</div>
-                <div className="text-[10px] text-slate-500">worker1 • PIN 1234</div>
-              </button>
+                {/* PIN */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Security PIN</span>
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value)}
+                    placeholder="••••"
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border-2 border-slate-300 focus:border-slate-900 focus:ring-0 outline-none transition-all bg-slate-50 focus:bg-white tracking-widest"
+                  />
+                </div>
 
-              <button
-                type="button"
-                onClick={() => handleQuickFill("worker2", "2026")}
-                className="p-2 border-2 border-slate-200 hover:border-slate-900 rounded-xl bg-slate-50 hover:bg-white text-left transition-all cursor-pointer font-mono"
-              >
-                <div className="text-xs font-black text-slate-900">Pooja</div>
-                <div className="text-[10px] text-slate-500">worker2 • PIN 2026</div>
-              </button>
-            </div>
-          </div>
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full mt-2 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-black text-sm uppercase tracking-wider rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_#0f172a] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#0f172a] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Authorizing Shift...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4" />
+                      <span>Clock In & Open Register</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -190,7 +190,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. asad@froosh.com or worker1"
+                  placeholder="Enter your username or ID"
                   autoCapitalize="none"
                   className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:bg-white"
                 />
@@ -207,7 +207,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   type="password"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
-                  placeholder="e.g. asad1234 or 1234"
+                  placeholder="Enter your password or PIN"
                   className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:bg-white"
                 />
               </div>

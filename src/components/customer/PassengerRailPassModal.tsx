@@ -241,7 +241,7 @@ export const PassengerRailPassModal: React.FC<PassengerRailPassModalProps> = ({
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Aarav Sharma"
+                      placeholder="Enter your name"
                       value={passengerName}
                       onChange={(e) => setPassengerName(e.target.value)}
                       className="w-full bg-white border-2 border-slate-900 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400"
@@ -314,9 +314,13 @@ export const PassengerRailPassModal: React.FC<PassengerRailPassModalProps> = ({
                 {/* Railway Pass Header */}
                 <div className="flex items-center justify-between border-b-2 border-slate-900 pb-2">
                   <div className="flex items-center gap-2">
-                    <Train className="w-4 h-4 text-slate-950" />
+                    <img
+                      src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
+                      alt="Froosh Junction"
+                      className="h-6 w-auto object-contain"
+                    />
                     <span className="font-black text-xs uppercase tracking-wider">
-                      FROOSH JUNCTION • DIGITAL RAIL PASS
+                      DIGITAL RAIL PASS
                     </span>
                   </div>
                   <span className="text-[10px] bg-slate-950 text-amber-300 px-2 py-0.5 rounded font-bold">

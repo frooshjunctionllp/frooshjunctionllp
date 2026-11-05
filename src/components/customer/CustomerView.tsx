@@ -200,18 +200,12 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
             onClick={() => setActiveTab("home")}
             className="cursor-pointer flex items-center gap-2.5 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-slate-950 text-amber-400 flex items-center justify-center border-2 border-slate-950 shadow-[2px_2px_0px_#000] group-hover:scale-105 transition-transform">
-              <Train className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-black text-slate-950 text-base sm:text-lg font-mono tracking-wider uppercase">
-                  Froosh Junction
-                </span>
-                <span className="text-[10px] bg-slate-950 text-amber-300 font-mono font-bold px-1.5 py-0.2 rounded">
-                  700014
-                </span>
-              </div>
+            <img
+              src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
+              alt="Froosh Junction"
+              className="h-10 sm:h-12 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-xs"
+            />
+            <div className="hidden sm:block">
               <p className="text-[10px] font-bold text-slate-900 tracking-tight font-mono">
                 Your Next Fresh Stop • Pure Juices & Shakes
               </p>

@@ -52,8 +52,12 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
         >
           {/* Top Brand Info */}
           <div className="text-center border-b border-dashed border-slate-300 pb-4 mb-4">
-            <div className="font-pixel text-sm sm:text-base text-red-600 tracking-wider">
-              FROOSH JUNCTION
+            <div className="flex justify-center mb-1.5">
+              <img
+                src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
+                alt="Froosh Junction"
+                className="h-10 w-auto object-contain"
+              />
             </div>
             <p className="text-xs text-slate-600 mt-0.5 font-semibold">
               Fresh Juices • Thick Shakes • Fruit Bowls

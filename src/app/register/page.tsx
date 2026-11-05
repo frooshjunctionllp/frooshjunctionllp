@@ -14,8 +14,6 @@ import {
   Sparkles,
   CheckCircle2,
   AlertCircle,
-  GlassWater,
-  Flame,
   ArrowLeft,
 } from "lucide-react";
 
@@ -37,7 +35,7 @@ export default function RegisterPage() {
     const cleanInsta = instagram.trim().replace(/^@/, "");
 
     if (!cleanName) {
-      setErrorMsg("Please enter your full name.");
+      setErrorMsg("Please enter your name.");
       return;
     }
 
@@ -49,7 +47,6 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // 1. Initialize local cache and register customer pass
       storageService.init();
       const pass = storageService.registerCustomer(
         cleanName,
@@ -57,7 +54,7 @@ export default function RegisterPage() {
         cleanInsta ? `@${cleanInsta}` : undefined
       );
 
-      // 2. Persist to MongoDB Atlas directly
+      // Persist to MongoDB Atlas directly
       try {
         await fetch("/api/customers", {
           method: "POST",
@@ -77,7 +74,6 @@ export default function RegisterPage() {
 
       setIsSuccess(true);
 
-      // Short delay for high-end micro-interaction then direct to menu
       setTimeout(() => {
         router.push("/?tab=menu");
       }, 900);
@@ -96,7 +92,7 @@ export default function RegisterPage() {
           className="inline-flex items-center gap-2 text-xs font-mono font-bold text-slate-700 hover:text-slate-950 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Froosh Platform</span>
+          <span>Back to Menu</span>
         </Link>
         <div className="flex items-center gap-1.5 font-mono text-xs text-amber-900 bg-amber-200/70 border border-amber-300 px-2.5 py-1 rounded-full">
           <Ticket className="w-3.5 h-3.5 text-amber-700" />
@@ -107,10 +103,14 @@ export default function RegisterPage() {
       {/* Main Registration Card */}
       <main className="max-w-md w-full mx-auto my-auto py-6">
         <div className="bg-white border-3 border-slate-900 rounded-3xl shadow-[6px_6px_0px_#0f172a] p-6 sm:p-8 relative overflow-hidden">
-          {/* Top Decorative Header */}
+          {/* Logo Header */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-400 text-slate-950 rounded-2xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-3">
-              <Train className="w-6 h-6" />
+            <div className="flex justify-center mb-3">
+              <img
+                src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
+                alt="Froosh Junction"
+                className="h-16 w-auto object-contain drop-shadow-sm"
+              />
             </div>
             <h1 className="font-mono text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-tight">
               Create Your Drink Pass
@@ -122,9 +122,12 @@ export default function RegisterPage() {
 
           {/* Success Banner */}
           {isSuccess ? (
-            <div className="text-center py-8 space-y-3 font-mono animate-in fade-in zoom-in-95 duration-300">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full border-2 border-emerald-500 mb-2">
-                <CheckCircle2 className="w-8 h-8" />
+            <div className="text-center py-8 space-y-4 font-mono animate-in fade-in zoom-in-95 duration-300">
+              <div className="relative inline-flex items-center justify-center w-20 h-20 mx-auto">
+                <div className="absolute inset-0 rounded-full border-4 border-amber-400 border-t-red-600 animate-spin" />
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center border-2 border-emerald-500">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
               </div>
               <h2 className="text-lg font-black text-slate-900">
                 Pass Activated!
@@ -132,8 +135,8 @@ export default function RegisterPage() {
               <p className="text-xs text-emerald-700 font-bold">
                 Welcome aboard, {name}. Directing you to the juice menu...
               </p>
-              <div className="pt-2">
-                <div className="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="w-48 h-1.5 bg-slate-100 rounded-full mx-auto overflow-hidden">
+                <div className="h-full bg-amber-400 rounded-full animate-pulse" style={{ width: "80%" }} />
               </div>
             </div>
           ) : (
@@ -157,7 +160,7 @@ export default function RegisterPage() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Asad Siddiqui"
+                  placeholder="Enter your name"
                   className="w-full px-3.5 py-2.5 text-sm rounded-xl border-2 border-slate-300 focus:border-slate-900 focus:ring-0 outline-none transition-all bg-slate-50 focus:bg-white"
                 />
               </div>
@@ -230,7 +233,10 @@ export default function RegisterPage() {
                 className="w-full mt-2 py-3 px-4 bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono font-black text-sm uppercase tracking-wider rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_#0f172a] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#0f172a] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
                 {isLoading ? (
-                  <span>Activating Pass...</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                    <span>Activating Pass...</span>
+                  </div>
                 ) : (
                   <>
                     <span>Register & Go to Menu</span>

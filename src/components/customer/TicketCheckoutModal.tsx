@@ -270,7 +270,7 @@ export const TicketCheckoutModal: React.FC<TicketCheckoutModalProps> = ({
                   <input
                     type="text"
                     required
-                    placeholder="Full Name (e.g. Aarav Sharma)*"
+                    placeholder="Enter your name *"
                     value={passengerNameInput}
                     onChange={(e) => setPassengerNameInput(e.target.value)}
                     className="w-full bg-white border border-slate-900 rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:outline-none"

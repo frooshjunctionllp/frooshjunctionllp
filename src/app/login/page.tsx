@@ -14,22 +14,25 @@ import {
   AlertCircle,
   ArrowLeft,
   Sparkles,
+  Shield,
+  ChefHat,
 } from "lucide-react";
 
 export default function CustomerLoginPage() {
   const router = useRouter();
-  const [phone, setPhone] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [successText, setSuccessText] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
 
-    const cleanInput = phone.trim().replace(/[\s-]/g, "");
-    if (!cleanInput || cleanInput.length < 5) {
-      setErrorMsg("Please enter your registered mobile number or PNR.");
+    const cleanInput = identifier.trim();
+    if (!cleanInput) {
+      setErrorMsg("Please enter your mobile phone number, PNR, or Staff/Admin ID.");
       return;
     }
 
@@ -38,30 +41,51 @@ export default function CustomerLoginPage() {
     try {
       storageService.init();
 
+      // Check if user entered admin or worker username directly on this page
+      const lower = cleanInput.toLowerCase();
+      if (lower === "admin" || lower === "asad@froosh.com") {
+        setSuccessText("Admin credentials recognized. Redirecting to Admin Security Console...");
+        setIsSuccess(true);
+        setTimeout(() => {
+          window.location.href = "/admin";
+        }, 700);
+        return;
+      }
+      if (lower === "worker1" || lower === "worker2" || lower.startsWith("wrk")) {
+        setSuccessText("Staff account recognized. Redirecting to Staff Terminal...");
+        setIsSuccess(true);
+        setTimeout(() => {
+          window.location.href = "/staff";
+        }, 700);
+        return;
+      }
+
+      const cleanPhone = cleanInput.replace(/[\s-]/g, "");
+
       // 1. Check local storage passes first for instant zero-latency match
       const localPasses = storageService.getCustomerPasses();
       const localMatch = localPasses.find(
         (p) =>
-          p.phone?.replace(/[\s-]/g, "") === cleanInput ||
+          p.phone?.replace(/[\s-]/g, "") === cleanPhone ||
           p.pnr.toLowerCase() === cleanInput.toLowerCase() ||
           p.customerId?.toLowerCase() === cleanInput.toLowerCase()
       );
 
       if (localMatch) {
         storageService.setCurrentCustomerPass(localMatch);
+        setSuccessText(`Welcome back, ${localMatch.name}! Retrieving your drink journal...`);
         setIsSuccess(true);
         setTimeout(() => {
-          router.push("/?tab=menu");
-        }, 700);
+          window.location.href = "/?tab=menu";
+        }, 800);
         return;
       }
 
-      // 2. Query MongoDB Atlas customers
-      const res = await fetch(`/api/customers?phone=${encodeURIComponent(cleanInput)}`);
+      // 2. Query MongoDB Atlas customers by phone
+      const res = await fetch(`/api/customers?phone=${encodeURIComponent(cleanPhone)}`);
       const data = await res.json();
 
       if (data.success && data.customer) {
-        // Customer exists in MongoDB Atlas! Create / restore pass locally
         const c = data.customer;
         const restoredPass: CustomerPass = {
           id: `pass-${c.id}`,
@@ -83,16 +107,16 @@ export default function CustomerLoginPage() {
 
         storageService.saveCustomerPass(restoredPass);
         storageService.setCurrentCustomerPass(restoredPass);
+        setSuccessText(`Welcome back, ${c.name}! Opening menu...`);
         setIsSuccess(true);
         setTimeout(() => {
-          router.push("/?tab=menu");
-        }, 700);
+          window.location.href = "/?tab=menu";
+        }, 800);
         return;
       }
 
-      // If not found in DB or local passes:
       setErrorMsg(
-        "No customer pass found with this phone number. Please register your pass first."
+        "No customer pass found with this phone number. Please register your pass below."
       );
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to log in. Please try again.");
@@ -110,7 +134,7 @@ export default function CustomerLoginPage() {
           className="inline-flex items-center gap-2 text-xs font-mono font-bold text-slate-700 hover:text-slate-950 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Froosh Platform</span>
+          <span>Back to Menu</span>
         </Link>
         <div className="flex items-center gap-1.5 font-mono text-xs text-amber-900 bg-amber-200/70 border border-amber-300 px-2.5 py-1 rounded-full">
           <Ticket className="w-3.5 h-3.5 text-amber-700" />
@@ -121,33 +145,40 @@ export default function CustomerLoginPage() {
       {/* Main Login Card */}
       <main className="max-w-md w-full mx-auto my-auto py-6">
         <div className="bg-white border-3 border-slate-900 rounded-3xl shadow-[6px_6px_0px_#0f172a] p-6 sm:p-8 relative overflow-hidden">
-          {/* Top Decorative Header */}
+          {/* Logo Header */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-400 text-slate-950 rounded-2xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-3">
-              <Train className="w-6 h-6" />
+            <div className="flex justify-center mb-3">
+              <img
+                src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
+                alt="Froosh Junction"
+                className="h-16 w-auto object-contain drop-shadow-sm"
+              />
             </div>
             <h1 className="font-mono text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-tight">
-              Customer Sign In
+              Sign In to Your Pass
             </h1>
             <p className="text-xs text-slate-600 font-mono mt-1">
-              Enter your mobile phone number to open your drink pass
+              Enter your registered mobile phone number to open your drink pass
             </p>
           </div>
 
           {/* Success Banner */}
           {isSuccess ? (
-            <div className="text-center py-8 space-y-3 font-mono animate-in fade-in zoom-in-95 duration-300">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full border-2 border-emerald-500 mb-2">
-                <CheckCircle2 className="w-8 h-8" />
+            <div className="text-center py-8 space-y-4 font-mono animate-in fade-in zoom-in-95 duration-300">
+              <div className="relative inline-flex items-center justify-center w-20 h-20 mx-auto">
+                <div className="absolute inset-0 rounded-full border-4 border-amber-400 border-t-red-600 animate-spin" />
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center border-2 border-emerald-500">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
               </div>
               <h2 className="text-lg font-black text-slate-900">
                 Logged In Successfully!
               </h2>
-              <p className="text-xs text-emerald-700 font-bold">
-                Retrieving your pass & loading menu...
+              <p className="text-xs text-emerald-700 font-bold max-w-xs mx-auto">
+                {successText || "Retrieving your pass & loading menu..."}
               </p>
-              <div className="pt-2">
-                <div className="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="w-48 h-1.5 bg-slate-100 rounded-full mx-auto overflow-hidden">
+                <div className="h-full bg-amber-400 rounded-full animate-pulse" style={{ width: "85%" }} />
               </div>
             </div>
           ) : (
@@ -169,7 +200,7 @@ export default function CustomerLoginPage() {
                 </div>
               )}
 
-              {/* Phone Number Input */}
+              {/* Phone / Identifier Input */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5 text-slate-500" />
@@ -180,16 +211,16 @@ export default function CustomerLoginPage() {
                     +91
                   </span>
                   <input
-                    type="tel"
+                    type="text"
                     required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
                     placeholder="98765 43210"
                     className="w-full pl-12 pr-3.5 py-2.5 text-sm rounded-xl border-2 border-slate-300 focus:border-slate-900 focus:ring-0 outline-none transition-all bg-slate-50 focus:bg-white"
                   />
                 </div>
                 <p className="text-[10px] text-slate-500">
-                  Enter the phone number you used when ordering or registering.
+                  Enter the phone number used when ordering or registering.
                 </p>
               </div>
 
@@ -200,7 +231,10 @@ export default function CustomerLoginPage() {
                 className="w-full mt-2 py-3 px-4 bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono font-black text-sm uppercase tracking-wider rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_#0f172a] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#0f172a] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
                 {isLoading ? (
-                  <span>Checking Passenger Pass...</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                    <span>Checking Passenger Pass...</span>
+                  </div>
                 ) : (
                   <>
                     <span>Sign In & Open Menu</span>
@@ -220,6 +254,25 @@ export default function CustomerLoginPage() {
                     Register here in 10 seconds
                   </Link>
                 </p>
+              </div>
+
+              {/* Store Operations Access */}
+              <div className="pt-2 flex items-center justify-center gap-3 text-[11px] text-slate-500 font-mono">
+                <Link
+                  href="/staff"
+                  className="inline-flex items-center gap-1 text-slate-600 hover:text-emerald-700 hover:underline"
+                >
+                  <ChefHat className="w-3 h-3 text-emerald-600" />
+                  <span>Staff Terminal</span>
+                </Link>
+                <span>•</span>
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center gap-1 text-slate-600 hover:text-red-700 hover:underline"
+                >
+                  <Shield className="w-3 h-3 text-red-600" />
+                  <span>Admin Console</span>
+                </Link>
               </div>
             </form>
           )}

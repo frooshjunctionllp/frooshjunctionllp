@@ -91,8 +91,8 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: "kds",
-      label: "Station KDS",
-      shortLabel: "Kitchen",
+      label: "Orders",
+      shortLabel: "Orders",
       icon: <ChefHat className="w-4 h-4" />,
     },
     {
@@ -150,17 +150,17 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="w-full px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
           {/* Brand Logo & Tag */}
           <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-pixel text-xs sm:text-base text-red-600 tracking-wider">
-                  FROOSH
-                </span>
-                <span className="font-pixel text-xs sm:text-base text-slate-900 tracking-wider">
-                  JUNCTION
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 font-medium hidden md:block">
-                Juice & Shake Management • Quick POS & MongoDB Atlas
+            <img
+              src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
+              alt="Froosh Junction"
+              className="h-9 sm:h-11 w-auto object-contain"
+            />
+            <div className="flex flex-col hidden sm:flex">
+              <span className="font-pixel text-[11px] text-slate-900 tracking-wider">
+                OPERATIONS PORTAL
+              </span>
+              <p className="text-[10px] text-slate-500 font-medium">
+                Live POS & Real-Time Orders
               </p>
             </div>
 
