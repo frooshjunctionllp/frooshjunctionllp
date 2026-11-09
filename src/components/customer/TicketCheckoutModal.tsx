@@ -159,6 +159,7 @@ export const TicketCheckoutModal: React.FC<TicketCheckoutModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-1 rounded-lg text-amber-300 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -235,7 +236,7 @@ export const TicketCheckoutModal: React.FC<TicketCheckoutModalProps> = ({
           {/* Passenger Identity Block */}
           <div className="border-2 border-slate-900 bg-amber-100/90 rounded-xl p-3">
             <span className="text-[10px] uppercase font-bold text-slate-700 font-mono block mb-1">
-              BOARDING PASSENGER
+              Your details
             </span>
             {currentPass ? (
               <div className="flex items-center justify-between text-xs">
@@ -305,7 +306,7 @@ export const TicketCheckoutModal: React.FC<TicketCheckoutModalProps> = ({
           {/* Fulfillment Type */}
           <div>
             <label className="block text-xs font-black uppercase text-slate-900 font-mono mb-1.5">
-              Fulfillment Type
+              How would you like your order?
             </label>
             <div className="grid grid-cols-3 gap-2 text-xs font-mono">
               <button
@@ -443,7 +444,7 @@ export const TicketCheckoutModal: React.FC<TicketCheckoutModalProps> = ({
               </div>
             )}
             <div className="flex justify-between text-slate-950 font-black text-sm pt-1 border-t border-slate-300">
-              <span>Ticket Total</span>
+              <span>Order total</span>
               <span>₹{total}</span>
             </div>
           </div>
@@ -466,7 +467,7 @@ export const TicketCheckoutModal: React.FC<TicketCheckoutModalProps> = ({
             className="bg-amber-400 hover:bg-amber-500 disabled:opacity-50 text-slate-950 border-2 border-slate-950 font-mono font-black px-6 py-2.5 rounded-lg shadow-[3px_3px_0px_#000] hover:shadow-none transition-all uppercase text-xs cursor-pointer flex items-center gap-1.5"
           >
             <Train className="w-4 h-4" />
-            <span>Generate Ticket & Board</span>
+            <span>Place order</span>
           </button>
         </div>
       </div>

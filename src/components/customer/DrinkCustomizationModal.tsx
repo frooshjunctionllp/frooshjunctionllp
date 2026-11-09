@@ -30,10 +30,8 @@ export const DrinkCustomizationModal: React.FC<DrinkCustomizationModalProps> = (
   onClose,
   onAddToCart,
 }) => {
-  if (!isOpen || !product) return null;
-
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(
-    product.variants[0] || { id: "default", name: "Regular", price: 90 }
+    product?.variants.find((variant) => variant.isAvailable !== false) || { id: "default", name: "Regular", price: 90 }
   );
   const [quantity, setQuantity] = useState(1);
   const [sugarLevel, setSugarLevel] = useState<
@@ -43,6 +41,8 @@ export const DrinkCustomizationModal: React.FC<DrinkCustomizationModalProps> = (
     "Normal Chill" | "Less Ice" | "No Ice"
   >("Normal Chill");
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+
+  if (!isOpen || !product) return null;
 
   // Calculate Addon Prices
   const addonTotal = selectedAddons.reduce((sum, addonName) => {
@@ -91,6 +91,7 @@ export const DrinkCustomizationModal: React.FC<DrinkCustomizationModalProps> = (
           </div>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-1 rounded-lg text-amber-300 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -268,7 +269,7 @@ export const DrinkCustomizationModal: React.FC<DrinkCustomizationModalProps> = (
             onClick={handleConfirm}
             className="bg-amber-400 hover:bg-amber-500 text-slate-950 border-2 border-slate-950 font-mono font-black px-5 py-2.5 rounded-lg shadow-[3px_3px_0px_#000] hover:shadow-none transition-all uppercase text-xs cursor-pointer"
           >
-            Add to Ticket
+            Add to order
           </button>
         </div>
       </div>

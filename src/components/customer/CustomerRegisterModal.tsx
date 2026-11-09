@@ -107,7 +107,7 @@ export const CustomerRegisterModal: React.FC<CustomerRegisterModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-black tracking-wider uppercase">
-                {currentPass ? "Passenger Profile" : "Board the Junction"}
+                {currentPass ? "Your account" : "Your Froosh account"}
               </h3>
               <p className="text-[11px] text-amber-200/80">
                 Froosh Junction • Pure Juices & Shakes
@@ -116,6 +116,7 @@ export const CustomerRegisterModal: React.FC<CustomerRegisterModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-1.5 rounded-lg text-amber-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -169,11 +170,11 @@ export const CustomerRegisterModal: React.FC<CustomerRegisterModalProps> = ({
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
+              <p className="text-xs text-slate-600">Already have an account? <a className="text-red-600 underline" href="/login">Sign in</a></p>
               <div className="bg-amber-100/90 border border-amber-300 rounded-xl p-3 text-xs text-amber-950 flex items-start gap-2.5">
                 <Sparkles className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                 <p className="font-sans leading-relaxed">
-                  Enter your <strong>Phone Number</strong> and <strong>Name</strong>.
-                  We&apos;ll remember your session and route you directly to the drink menu!
+                  Add your name and phone number to save your details for future orders. You can also browse the menu and enter these at checkout.
                 </p>
               </div>
 

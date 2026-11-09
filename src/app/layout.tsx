@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 import "./dashboard.css";
+import "./storefront.css";
 import { AppStateProvider } from "@/state/AppState";
 
 const poppins = Poppins({
