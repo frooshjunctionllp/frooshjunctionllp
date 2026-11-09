@@ -47,6 +47,7 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
+        signal: AbortSignal.timeout(15000),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: inputUser, pin: inputPin }),
       });
@@ -55,15 +56,13 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
       if (data.success && data.user) {
         setIsSuccess(true);
         onLoginSuccess(data.user);
-        setTimeout(() => {
-          window.location.href = "/staff";
-        }, 700);
         return;
       } else {
         setErrorMsg(data.message || "Invalid Worker credentials. Check ID and PIN.");
         setIsLoading(false);
       }
     } catch {
+      setIsSuccess(false);
       // Local fallback check
       const matched = workers.find(
         (w) =>
@@ -84,9 +83,6 @@ export const StaffLoginForm: React.FC<StaffLoginFormProps> = ({
           };
           setIsSuccess(true);
           onLoginSuccess(session);
-          setTimeout(() => {
-            window.location.href = "/staff";
-          }, 700);
           return;
         }
       } else {

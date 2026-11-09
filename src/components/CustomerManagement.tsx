@@ -159,17 +159,17 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
   return (
     <div className="space-y-6 pb-20 md:pb-6 font-sans">
       {/* Search, Filter & Register Header */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-xs">
+      <div className="dashboard-panel space-y-3">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-3">
           <div>
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-red-600" />
               <h2 className="font-bold text-sm text-slate-900">
-                Customer Directory & Juice History
+                Customer directory
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Tracks customer drink purchase history, Instagram tags, and visit logs.
+              Contact details, past orders, and familiar favourites.
             </p>
           </div>
           <button
@@ -177,7 +177,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
             className="pixel-btn-yellow px-4 py-2 text-xs flex items-center gap-1.5 cursor-pointer rounded-lg font-bold"
           >
             <UserPlus className="w-4 h-4" />
-            <span>+ Register Client</span>
+            <span>Add customer</span>
           </button>
         </div>
 
@@ -195,7 +195,7 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
           </div>
 
           {/* Gender Filter */}
-          <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-1">
+          <div className="dashboard-filter-tabs flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-1">
             <span className="text-xs font-semibold text-slate-500 px-2">Gender:</span>
             {(["all", "male", "female"] as const).map((g) => (
               <button
@@ -301,6 +301,17 @@ export const CustomerManagement: React.FC<CustomerManagementProps> = ({
           );
         })}
       </div>
+
+      {filteredCustomers.length === 0 && (
+        <div className="dashboard-empty-state">
+          <Users className="w-8 h-8" />
+          <p>{customers.length === 0 ? "Make room for your regulars" : "No customers found"}</p>
+          <p>{customers.length === 0 ? "Add your first customer to start building their visit history." : "Try a different name, phone number, or filter."}</p>
+          <button className="pixel-btn-white mt-4 px-4 text-xs" onClick={customers.length === 0 ? handleOpenAddModal : () => { setSearchQuery(""); setGenderFilter("all"); }}>
+            {customers.length === 0 ? "Add customer" : "Clear filters"}
+          </button>
+        </div>
+      )}
 
       {/* MODAL: CUSTOMER PROFILE & PURCHASE LOG */}
       {selectedCustomer && (

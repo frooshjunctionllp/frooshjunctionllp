@@ -137,12 +137,12 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({
   return (
     <div className="space-y-6 pb-20 md:pb-6 font-sans">
       {/* FILTER ENGINE PANEL */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-4">
+      <div className="dashboard-panel space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-red-600" />
             <h2 className="font-bold text-sm text-slate-900">
-              Enterprise Reports & Filter Engine
+              Explore your sales
             </h2>
           </div>
           <div className="flex items-center gap-2">
@@ -304,7 +304,7 @@ export const ReportsAnalytics: React.FC<ReportsAnalyticsProps> = ({
       </div>
 
       {/* KPI METRIC CARDS */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="report-metrics grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs">
           <div className="flex items-center justify-between text-red-600 mb-1">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Revenue</span>

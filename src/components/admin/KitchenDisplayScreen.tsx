@@ -78,27 +78,28 @@ export const KitchenDisplayScreen: React.FC<KitchenDisplayScreenProps> = ({
   });
 
   return (
-    <div className="space-y-5 font-mono">
+    <div className="kitchen-board space-y-5">
       {/* Top LED Station KDS Header */}
-      <div className="border-3 border-slate-900 bg-slate-950 text-amber-400 p-4 rounded-xl shadow-[4px_4px_0px_#0f172a] flex flex-wrap items-center justify-between gap-3">
+      <div className="dashboard-panel flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-amber-400 text-slate-950 rounded-lg">
+          <div className="p-2 bg-red-50 text-red-600 rounded-lg">
             <ChefHat className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-black uppercase tracking-wider text-white">
-              Live Customer Orders • Ticket Dispatch
+            <h2 className="font-semibold text-slate-900">
+              Kitchen queue
             </h2>
-            <p className="text-[11px] text-amber-200/80">
-              Live Customer Orders & Kitchen Dispatch
+            <p className="text-xs text-slate-500">
+              Prepare, finish, and hand off every drink.
             </p>
           </div>
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-2 text-xs">
+        <div className="kitchen-filters flex items-center gap-2 text-xs">
           <button
             onClick={() => setFilter("active")}
+            aria-pressed={filter === "active"}
             className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
               filter === "active"
                 ? "bg-amber-400 text-slate-950 border-amber-400 font-bold"
@@ -109,6 +110,7 @@ export const KitchenDisplayScreen: React.FC<KitchenDisplayScreenProps> = ({
           </button>
           <button
             onClick={() => setFilter("ready")}
+            aria-pressed={filter === "ready"}
             className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
               filter === "ready"
                 ? "bg-amber-400 text-slate-950 border-amber-400 font-bold"
@@ -119,6 +121,7 @@ export const KitchenDisplayScreen: React.FC<KitchenDisplayScreenProps> = ({
           </button>
           <button
             onClick={() => setFilter("all")}
+            aria-pressed={filter === "all"}
             className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
               filter === "all"
                 ? "bg-amber-400 text-slate-950 border-amber-400 font-bold"
@@ -132,11 +135,11 @@ export const KitchenDisplayScreen: React.FC<KitchenDisplayScreenProps> = ({
 
       {/* Orders Grid */}
       {filteredOrders.length === 0 ? (
-        <div className="border-3 border-dashed border-slate-300 bg-white rounded-xl p-8 text-center text-slate-500">
+        <div className="dashboard-empty-state">
           <Train className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-          <p className="font-bold text-sm">Platform Track Clear</p>
+          <p className="font-bold text-sm">All caught up</p>
           <p className="text-xs text-slate-400">
-            Incoming QR code orders from customers will appear here in real time.
+            New customer orders will appear here when they arrive.
           </p>
         </div>
       ) : (
@@ -147,7 +150,7 @@ export const KitchenDisplayScreen: React.FC<KitchenDisplayScreenProps> = ({
             return (
               <div
                 key={order.id}
-                className={`border-3 border-slate-900 rounded-xl overflow-hidden shadow-[3px_3px_0px_#0f172a] bg-white flex flex-col justify-between ${
+                className={`border border-slate-200 rounded-xl overflow-hidden bg-white flex flex-col justify-between ${
                   isReady ? "ring-4 ring-amber-400" : ""
                 }`}
               >

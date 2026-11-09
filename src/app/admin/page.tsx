@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   Category,
   Customer,
@@ -8,9 +9,9 @@ import {
   Sale,
   WorkerUser,
   AuthSession,
-  ContestOffer,
   OnlineOrder,
 } from "@/types";
+import { useAppState } from "@/state/AppState";
 import { storageService } from "@/services/storageService";
 import { Header, ActiveTab } from "@/components/Header";
 import { PosTerminal } from "@/components/PosTerminal";
@@ -27,97 +28,48 @@ import { KitchenDisplayScreen } from "@/components/admin/KitchenDisplayScreen";
 import { NewOrderNotificationModal } from "@/components/admin/NewOrderNotificationModal";
 
 export default function AdminPortalPage() {
+  const router = useRouter();
+  const { categories, products, customers, workers, onlineOrders, currentUser, sales, offers, isLoaded, todayStr } = useAppState();
   const [activeTab, setActiveTab] = useState<ActiveTab>("pos");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [sales, setSales] = useState<Sale[]>([]);
-  const [workers, setWorkers] = useState<WorkerUser[]>([]);
-  const [offers, setOffers] = useState<ContestOffer[]>([]);
-  const [onlineOrders, setOnlineOrders] = useState<OnlineOrder[]>([]);
-  const [currentUser, setCurrentUser] = useState<AuthSession | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [activeReceiptSale, setActiveReceiptSale] = useState<Sale | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [todayStr, setTodayStr] = useState<string>("");
-
-  const refreshData = () => {
-    storageService.init();
-    setCategories(storageService.getCategories());
-    setProducts(storageService.getProducts());
-    setCustomers(storageService.getCustomers());
-    setSales(storageService.getSales());
-    setWorkers(storageService.getWorkers());
-    setOffers(storageService.getOffers());
-    setOnlineOrders(storageService.getOnlineOrders());
-    const user = storageService.getCurrentUser();
-    // Only accept admin in this console
-    if (user && user.role === "admin") {
-      setCurrentUser(user);
-    } else {
-      setCurrentUser(null);
-    }
-  };
-
-  useEffect(() => {
-    setTodayStr(new Date().toISOString().slice(0, 10));
-    refreshData();
-    setIsLoaded(true);
-
-    // Sync with MongoDB Atlas in background
-    storageService.syncFromMongo().then((updates) => {
-      if (updates.categories) setCategories(updates.categories);
-      if (updates.products) setProducts(updates.products);
-      if (updates.customers) setCustomers(updates.customers);
-      if (updates.sales) setSales(updates.sales);
-      if (updates.workers) setWorkers(updates.workers);
-      if (updates.orders) setOnlineOrders(updates.orders);
-    });
-  }, []);
 
   // Poll online orders from MongoDB Atlas in real time every 2.5 seconds
   useEffect(() => {
     if (currentUser?.role === "admin") {
-      storageService.syncOrdersFromMongo().then((orders) => {
-        setOnlineOrders(orders);
-      });
+      void storageService.syncOrdersFromMongo();
       const interval = setInterval(() => {
-        storageService.syncOrdersFromMongo().then((orders) => {
-          setOnlineOrders(orders);
-        });
+        void storageService.syncOrdersFromMongo();
       }, 2500);
       return () => clearInterval(interval);
     }
-  }, [currentUser]);
+  }, [currentUser?.id, currentUser?.role]);
 
   // Online Order Action Handlers
   const handleConfirmOnlineOrder = async (orderId: string) => {
     await storageService.updateOrderStatus(orderId, "accepted");
-    const fresh = await storageService.syncOrdersFromMongo();
-    setOnlineOrders(fresh);
+    await storageService.syncOrdersFromMongo();
   };
 
   const handleRejectOnlineOrder = async (orderId: string, reason?: string) => {
     await storageService.updateOrderStatus(orderId, "cancelled", { notes: reason });
-    const fresh = await storageService.syncOrdersFromMongo();
-    setOnlineOrders(fresh);
+    await storageService.syncOrdersFromMongo();
   };
 
   const handleModifyOnlineOrder = async (
     orderId: string,
-    modifications: { items: any[]; total: number; notes?: string }
+    modifications: { items: OnlineOrder["items"]; total: number; notes?: string }
   ) => {
     await storageService.updateOrderStatus(orderId, "accepted", modifications);
-    const fresh = await storageService.syncOrdersFromMongo();
-    setOnlineOrders(fresh);
+    await storageService.syncOrdersFromMongo();
   };
 
   const nextCustomerId = useMemo(() => {
-    return storageService.getNextCustomerId();
+    return storageService.getNextCustomerId(customers);
   }, [customers]);
 
   const nextWorkerId = useMemo(() => {
-    return storageService.getNextWorkerId();
+    return storageService.getNextWorkerId(workers);
   }, [workers]);
 
   const headerStats = useMemo(() => {
@@ -128,7 +80,11 @@ export default function AdminPortalPage() {
         totalCustomers: customers.length,
       };
     }
-    const todaySales = sales.filter((s) => s.date.startsWith(todayStr));
+    const businessDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" });
+    const todaySales = sales.filter((sale) => {
+      const date = new Date(sale.date);
+      return !Number.isNaN(date.getTime()) && businessDate.format(date) === todayStr;
+    });
     const todayRevenue = todaySales.reduce((acc, s) => acc + s.total, 0);
 
     return {
@@ -139,53 +95,43 @@ export default function AdminPortalPage() {
   }, [todayStr, sales, customers]);
 
   const handleSaveCustomer = (customer: Customer) => {
-    const updated = storageService.saveCustomer(customer);
-    setCustomers(updated);
+    storageService.saveCustomer(customer);
   };
 
   const handleRecordSale = (sale: Sale) => {
-    const updated = storageService.recordSale(sale);
-    setSales(updated);
+    storageService.recordSale(sale);
   };
 
   const handleDeleteSale = (saleId: string) => {
-    const updated = storageService.deleteSale(saleId);
-    setSales(updated);
+    storageService.deleteSale(saleId);
   };
 
-  const handleSaveCategory = (category: Category) => {
-    const updated = storageService.saveCategory(category);
-    setCategories(updated);
+  const handleSaveCategory = async (category: Category) => {
+    await storageService.saveCategory(category);
   };
 
-  const handleDeleteCategory = (categoryId: string) => {
-    const updated = storageService.deleteCategory(categoryId);
-    setCategories(updated);
+  const handleDeleteCategory = async (categoryId: string) => {
+    await storageService.deleteCategory(categoryId);
   };
 
-  const handleSaveProduct = (product: Product) => {
-    const updated = storageService.saveProduct(product);
-    setProducts(updated);
+  const handleSaveProduct = async (product: Product) => {
+    await storageService.saveProduct(product);
   };
 
-  const handleDeleteProduct = (productId: string) => {
-    const updated = storageService.deleteProduct(productId);
-    setProducts(updated);
+  const handleDeleteProduct = async (productId: string) => {
+    await storageService.deleteProduct(productId);
   };
 
   const handleSaveWorker = (worker: WorkerUser) => {
-    const updated = storageService.saveWorker(worker);
-    setWorkers(updated);
+    storageService.saveWorker(worker);
   };
 
   const handleDeleteWorker = (workerId: string) => {
-    const updated = storageService.deleteWorker(workerId);
-    setWorkers(updated);
+    storageService.deleteWorker(workerId);
   };
 
   const handleLoginSuccess = (user: AuthSession) => {
     storageService.setCurrentUser(user);
-    setCurrentUser(user);
   };
 
   const handleSwitchToWorker = (worker: WorkerUser) => {
@@ -196,12 +142,10 @@ export default function AdminPortalPage() {
       role: worker.role,
     };
     storageService.setCurrentUser(session);
-    setCurrentUser(session);
   };
 
   const handleLogout = () => {
     storageService.logout();
-    setCurrentUser(null);
   };
 
   if (!isLoaded) {
@@ -234,7 +178,7 @@ export default function AdminPortalPage() {
         workers={workers}
         onBackToCustomer={() => {
           if (typeof window !== "undefined") {
-            window.location.href = "/";
+            router.push("/");
           }
         }}
       />
@@ -243,7 +187,7 @@ export default function AdminPortalPage() {
 
   // 2. Admin Operations Dashboard (Full store visibility)
   return (
-    <div className="min-h-screen bg-[#FAF7EE] text-slate-800 flex flex-col font-sans">
+    <div className="dashboard-shell flex flex-col font-sans">
       {/* Top Header & Navigation */}
       <Header
         activeTab={activeTab}
@@ -254,13 +198,13 @@ export default function AdminPortalPage() {
         onLogout={handleLogout}
         onOpenCustomerPortal={() => {
           if (typeof window !== "undefined") {
-            window.location.href = "/";
+            router.push("/");
           }
         }}
       />
 
       {/* Main Content Body */}
-      <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <main id="dashboard-content" tabIndex={-1} className="dashboard-workspace">
         {activeTab === "pos" && (
           <PosTerminal
             categories={categories}
@@ -286,7 +230,7 @@ export default function AdminPortalPage() {
           <ContestOfferManager
             offers={offers}
             products={products}
-            onOffersUpdated={(updated) => setOffers(updated)}
+            onOffersUpdated={() => {}}
           />
         )}
 

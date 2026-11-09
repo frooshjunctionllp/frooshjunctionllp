@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
-import { INITIAL_PRODUCTS } from "@/lib/seedData";
 import { Product } from "@/types";
 
 export async function GET() {
@@ -12,42 +11,41 @@ export async function GET() {
       .sort({ createdAt: -1 })
       .toArray();
 
-    if (products.length === 0) {
-      await db.collection("products").insertMany(INITIAL_PRODUCTS as any);
-      return NextResponse.json({ success: true, data: INITIAL_PRODUCTS });
-    }
-
     const cleaned = products.map(({ _id, ...rest }) => rest);
     return NextResponse.json({ success: true, data: cleaned });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Products GET error:", err);
-    return NextResponse.json({
-      success: true,
-      data: INITIAL_PRODUCTS,
-      fallback: true,
-    });
+    return NextResponse.json({ success: false, message: "Database unavailable. Please try again." }, { status: 503 });
   }
 }
 
 export async function POST(req: Request) {
   try {
     const product: Product = await req.json();
-    if (!product.id || !product.name) {
+    if (!product || typeof product.id !== "string" || !product.id.trim() || typeof product.name !== "string" || !product.name.trim()) {
       return NextResponse.json(
         { success: false, message: "Product ID and name are required" },
         { status: 400 }
       );
     }
 
+    if (!product.categoryId || !Array.isArray(product.variants) || product.variants.length === 0 ||
+      product.variants.some((variant) => !variant || typeof variant.name !== "string" || !variant.name.trim() || !Number.isFinite(variant.price) || variant.price < 0)) {
+      return NextResponse.json({ success: false, message: "Choose a category and provide a valid name and non-negative price for every size." }, { status: 400 });
+    }
+
     const { db } = await connectToDatabase();
+    if (!await db.collection("categories").findOne({ id: product.categoryId })) {
+      return NextResponse.json({ success: false, message: "This category no longer exists. Please choose another category." }, { status: 400 });
+    }
     await db
       .collection("products")
       .updateOne({ id: product.id }, { $set: product }, { upsert: true });
 
     return NextResponse.json({ success: true, product });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { success: false, message: err.message },
+      { success: false, message: err instanceof Error ? err.message : "Database request failed" },
       { status: 500 }
     );
   }
@@ -68,9 +66,9 @@ export async function DELETE(req: Request) {
     await db.collection("products").deleteOne({ id });
 
     return NextResponse.json({ success: true, id });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { success: false, message: err.message },
+      { success: false, message: err instanceof Error ? err.message : "Database request failed" },
       { status: 500 }
     );
   }

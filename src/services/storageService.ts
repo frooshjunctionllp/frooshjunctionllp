@@ -1,3 +1,4 @@
+import { apiRequest } from "@/lib/apiClient";
 import {
   Category,
   Customer,
@@ -142,6 +143,27 @@ export const INITIAL_PASSES: CustomerPass[] = [];
  * 2. Instant local cache for zero-latency mobile touch response & offline resilience.
  */
 class StorageService {
+  private revisions = new Map<string, number>();
+  private syncPromise: ReturnType<StorageService["performSync"]> | null = null;
+  private ordersPromise: Promise<OnlineOrder[]> | null = null;
+  private notificationPending = false;
+
+  private notify(): void {
+    if (this.notificationPending) return;
+    this.notificationPending = true;
+    queueMicrotask(() => {
+      this.notificationPending = false;
+      window.dispatchEvent(new Event("froosh:change"));
+    });
+  }
+
+  private writeCache(key: string, value: string): void {
+    if (localStorage.getItem(key) === value) return;
+    localStorage.setItem(key, value);
+    this.revisions.set(key, (this.revisions.get(key) ?? 0) + 1);
+    this.notify();
+  }
+
   private isBrowser(): boolean {
     return typeof window !== "undefined";
   }
@@ -154,38 +176,37 @@ class StorageService {
     if (!initialized) {
       this.resetToDefaults();
     }
-
-    // No auto-login by default: allows user to see the Login Page first
-    // Session is persisted once user explicitly logs in
-
-    // Trigger async sync with MongoDB in the background
-    this.syncFromMongo().catch((err) =>
-      console.warn("MongoDB initial sync warning (using local cache):", err)
-    );
   }
 
   public resetToDefaults(): void {
     if (!this.isBrowser()) return;
-    localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(INITIAL_CATEGORIES));
-    localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
-    localStorage.setItem(KEYS.CUSTOMERS, JSON.stringify(INITIAL_CUSTOMERS));
-    localStorage.setItem(KEYS.SALES, JSON.stringify(getInitialSales()));
-    localStorage.setItem(
+    this.writeCache(KEYS.CATEGORIES, JSON.stringify(INITIAL_CATEGORIES));
+    this.writeCache(KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
+    this.writeCache(KEYS.CUSTOMERS, JSON.stringify(INITIAL_CUSTOMERS));
+    this.writeCache(KEYS.SALES, JSON.stringify(getInitialSales()));
+    this.writeCache(
       KEYS.WORKERS,
       JSON.stringify([DEFAULT_ADMIN, ...INITIAL_WORKERS])
     );
-    localStorage.setItem(
+    this.writeCache(
       KEYS.CUSTOMER_PASSES,
       JSON.stringify(INITIAL_PASSES)
     );
-    localStorage.setItem(KEYS.OFFERS, JSON.stringify(INITIAL_OFFERS));
-    localStorage.setItem(KEYS.VOUCHERS, JSON.stringify([]));
-    localStorage.setItem(KEYS.ONLINE_ORDERS, JSON.stringify([]));
-    localStorage.setItem(KEYS.IS_INITIALIZED, "true");
+    this.writeCache(KEYS.OFFERS, JSON.stringify(INITIAL_OFFERS));
+    this.writeCache(KEYS.VOUCHERS, JSON.stringify([]));
+    this.writeCache(KEYS.ONLINE_ORDERS, JSON.stringify([]));
+    this.writeCache(KEYS.IS_INITIALIZED, "true");
   }
 
   // Sync state from MongoDB Atlas
-  public async syncFromMongo(): Promise<{
+  public syncFromMongo() {
+    if (!this.syncPromise) {
+      this.syncPromise = this.performSync().finally(() => { this.syncPromise = null; });
+    }
+    return this.syncPromise;
+  }
+
+  private async performSync(): Promise<{
     categories?: Category[];
     products?: Product[];
     customers?: Customer[];
@@ -196,43 +217,42 @@ class StorageService {
     if (!this.isBrowser()) return {};
 
     try {
-      // Trigger database init if needed
-      await fetch("/api/init").catch(() => {});
+      const revisions = new Map(this.revisions);
 
       const [catRes, prodRes, custRes, salesRes, workersRes, ordersRes] =
         await Promise.allSettled([
-          fetch("/api/categories").then((r) => r.json()),
-          fetch("/api/products").then((r) => r.json()),
-          fetch("/api/customers").then((r) => r.json()),
-          fetch("/api/sales").then((r) => r.json()),
-          fetch("/api/workers").then((r) => r.json()),
-          fetch("/api/orders").then((r) => r.json()),
+          apiRequest<{ data: Category[] }>("/api/categories"),
+          apiRequest<{ data: Product[] }>("/api/products"),
+          apiRequest<{ data: Customer[] }>("/api/customers"),
+          apiRequest<{ data: Sale[] }>("/api/sales"),
+          apiRequest<{ data: WorkerUser[] }>("/api/workers"),
+          apiRequest<{ data: OnlineOrder[] }>("/api/orders"),
         ]);
 
-      const updates: any = {};
+      const updates: Awaited<ReturnType<StorageService["performSync"]>> = {};
 
-      if (catRes.status === "fulfilled" && catRes.value?.data) {
-        localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(catRes.value.data));
+      if (catRes.status === "fulfilled" && Array.isArray(catRes.value?.data) && revisions.get(KEYS.CATEGORIES) === this.revisions.get(KEYS.CATEGORIES)) {
+        this.writeCache(KEYS.CATEGORIES, JSON.stringify(catRes.value.data));
         updates.categories = catRes.value.data;
       }
-      if (prodRes.status === "fulfilled" && prodRes.value?.data) {
-        localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(prodRes.value.data));
+      if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value?.data) && revisions.get(KEYS.PRODUCTS) === this.revisions.get(KEYS.PRODUCTS)) {
+        this.writeCache(KEYS.PRODUCTS, JSON.stringify(prodRes.value.data));
         updates.products = prodRes.value.data;
       }
-      if (custRes.status === "fulfilled" && custRes.value?.data) {
-        localStorage.setItem(KEYS.CUSTOMERS, JSON.stringify(custRes.value.data));
+      if (custRes.status === "fulfilled" && Array.isArray(custRes.value?.data) && revisions.get(KEYS.CUSTOMERS) === this.revisions.get(KEYS.CUSTOMERS)) {
+        this.writeCache(KEYS.CUSTOMERS, JSON.stringify(custRes.value.data));
         updates.customers = custRes.value.data;
       }
-      if (salesRes.status === "fulfilled" && salesRes.value?.data) {
-        localStorage.setItem(KEYS.SALES, JSON.stringify(salesRes.value.data));
+      if (salesRes.status === "fulfilled" && Array.isArray(salesRes.value?.data) && revisions.get(KEYS.SALES) === this.revisions.get(KEYS.SALES)) {
+        this.writeCache(KEYS.SALES, JSON.stringify(salesRes.value.data));
         updates.sales = salesRes.value.data;
       }
-      if (workersRes.status === "fulfilled" && workersRes.value?.data) {
-        localStorage.setItem(KEYS.WORKERS, JSON.stringify(workersRes.value.data));
+      if (workersRes.status === "fulfilled" && Array.isArray(workersRes.value?.data) && revisions.get(KEYS.WORKERS) === this.revisions.get(KEYS.WORKERS)) {
+        this.writeCache(KEYS.WORKERS, JSON.stringify(workersRes.value.data));
         updates.workers = workersRes.value.data;
       }
-      if (ordersRes.status === "fulfilled" && ordersRes.value?.data) {
-        localStorage.setItem(KEYS.ONLINE_ORDERS, JSON.stringify(ordersRes.value.data));
+      if (ordersRes.status === "fulfilled" && Array.isArray(ordersRes.value?.data) && revisions.get(KEYS.ONLINE_ORDERS) === this.revisions.get(KEYS.ONLINE_ORDERS)) {
+        this.writeCache(KEYS.ONLINE_ORDERS, JSON.stringify(ordersRes.value.data));
         updates.orders = ordersRes.value.data;
       }
 
@@ -257,9 +277,10 @@ class StorageService {
   public setCurrentUser(user: AuthSession | null): void {
     if (!this.isBrowser()) return;
     if (user) {
-      localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(user));
+      this.writeCache(KEYS.CURRENT_USER, JSON.stringify(user));
     } else {
       localStorage.removeItem(KEYS.CURRENT_USER);
+      this.notify();
     }
   }
 
@@ -279,8 +300,7 @@ class StorageService {
     }
   }
 
-  public getNextWorkerId(): string {
-    const workers = this.getWorkers();
+  public getNextWorkerId(workers = this.getWorkers()): string {
     let maxNum = 0;
     workers.forEach((w) => {
       const match = w.id.match(/\d+/);
@@ -301,7 +321,7 @@ class StorageService {
       list.push(worker);
     }
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.WORKERS, JSON.stringify(list));
+      this.writeCache(KEYS.WORKERS, JSON.stringify(list));
       // Async sync to MongoDB
       fetch("/api/workers", {
         method: "POST",
@@ -315,7 +335,7 @@ class StorageService {
   public deleteWorker(id: string): WorkerUser[] {
     const list = this.getWorkers().filter((w) => w.id !== id);
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.WORKERS, JSON.stringify(list));
+      this.writeCache(KEYS.WORKERS, JSON.stringify(list));
       // Async delete from MongoDB
       fetch(`/api/workers?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
@@ -336,33 +356,24 @@ class StorageService {
     }
   }
 
-  public saveCategory(category: Category): Category[] {
+  public async saveCategory(category: Category): Promise<Category[]> {
+    await apiRequest("/api/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(category),
+    });
     const list = this.getCategories();
-    const index = list.findIndex((c) => c.id === category.id);
-    if (index >= 0) {
-      list[index] = category;
-    } else {
-      list.push(category);
-    }
-    if (this.isBrowser()) {
-      localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(list));
-      fetch("/api/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(category),
-      }).catch((e) => console.warn("Failed to push category to Mongo:", e));
-    }
+    const index = list.findIndex((item) => item.id === category.id);
+    if (index >= 0) list[index] = category;
+    else list.unshift(category);
+    this.writeCache(KEYS.CATEGORIES, JSON.stringify(list));
     return list;
   }
 
-  public deleteCategory(id: string): Category[] {
-    const list = this.getCategories().filter((c) => c.id !== id);
-    if (this.isBrowser()) {
-      localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(list));
-      fetch(`/api/categories?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-      }).catch((e) => console.warn("Failed to delete category in Mongo:", e));
-    }
+  public async deleteCategory(id: string): Promise<Category[]> {
+    await apiRequest(`/api/categories?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    const list = this.getCategories().filter((item) => item.id !== id);
+    this.writeCache(KEYS.CATEGORIES, JSON.stringify(list));
     return list;
   }
 
@@ -378,33 +389,24 @@ class StorageService {
     }
   }
 
-  public saveProduct(product: Product): Product[] {
+  public async saveProduct(product: Product): Promise<Product[]> {
+    await apiRequest("/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(product),
+    });
     const list = this.getProducts();
-    const index = list.findIndex((p) => p.id === product.id);
-    if (index >= 0) {
-      list[index] = product;
-    } else {
-      list.unshift(product);
-    }
-    if (this.isBrowser()) {
-      localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(list));
-      fetch("/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(product),
-      }).catch((e) => console.warn("Failed to push product to Mongo:", e));
-    }
+    const index = list.findIndex((item) => item.id === product.id);
+    if (index >= 0) list[index] = product;
+    else list.unshift(product);
+    this.writeCache(KEYS.PRODUCTS, JSON.stringify(list));
     return list;
   }
 
-  public deleteProduct(id: string): Product[] {
-    const list = this.getProducts().filter((p) => p.id !== id);
-    if (this.isBrowser()) {
-      localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(list));
-      fetch(`/api/products?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-      }).catch((e) => console.warn("Failed to delete product in Mongo:", e));
-    }
+  public async deleteProduct(id: string): Promise<Product[]> {
+    await apiRequest(`/api/products?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    const list = this.getProducts().filter((item) => item.id !== id);
+    this.writeCache(KEYS.PRODUCTS, JSON.stringify(list));
     return list;
   }
 
@@ -424,8 +426,7 @@ class StorageService {
     return this.getCustomers().find((c) => c.id === id);
   }
 
-  public getNextCustomerId(): string {
-    const customers = this.getCustomers();
+  public getNextCustomerId(customers = this.getCustomers()): string {
     let maxId = 0;
     customers.forEach((c) => {
       const num = parseInt(c.id, 10);
@@ -445,7 +446,7 @@ class StorageService {
       list.push(customer);
     }
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.CUSTOMERS, JSON.stringify(list));
+      this.writeCache(KEYS.CUSTOMERS, JSON.stringify(list));
       fetch("/api/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -471,7 +472,7 @@ class StorageService {
     const list = this.getSales();
     list.unshift(sale); // newest first
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.SALES, JSON.stringify(list));
+      this.writeCache(KEYS.SALES, JSON.stringify(list));
       fetch("/api/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -484,7 +485,7 @@ class StorageService {
   public deleteSale(id: string): Sale[] {
     const list = this.getSales().filter((s) => s.id !== id);
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.SALES, JSON.stringify(list));
+      this.writeCache(KEYS.SALES, JSON.stringify(list));
       fetch(`/api/sales?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
       }).catch((e) => console.warn("Failed to delete sale in Mongo:", e));
@@ -517,7 +518,7 @@ class StorageService {
       list.push(pass);
     }
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.CUSTOMER_PASSES, JSON.stringify(list));
+      this.writeCache(KEYS.CUSTOMER_PASSES, JSON.stringify(list));
     }
     return pass;
   }
@@ -585,8 +586,8 @@ class StorageService {
 
     list.unshift(newPass);
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.CUSTOMER_PASSES, JSON.stringify(list));
-      localStorage.setItem(KEYS.CURRENT_PASS, JSON.stringify(newPass));
+      this.writeCache(KEYS.CUSTOMER_PASSES, JSON.stringify(list));
+      this.writeCache(KEYS.CURRENT_PASS, JSON.stringify(newPass));
     }
 
     // Create Customer record for POS & CRM
@@ -620,7 +621,7 @@ class StorageService {
     const trimmed = name.trim();
     const list = this.getCustomerPasses();
     // Check if matching pass already exists on current machine
-    let existing = list.find((p) => p.name.toLowerCase() === trimmed.toLowerCase());
+    const existing = list.find((p) => p.name.toLowerCase() === trimmed.toLowerCase());
     if (existing) {
       this.setCurrentCustomerPass(existing);
       return existing;
@@ -645,8 +646,8 @@ class StorageService {
 
     list.unshift(newPass);
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.CUSTOMER_PASSES, JSON.stringify(list));
-      localStorage.setItem(KEYS.CURRENT_PASS, JSON.stringify(newPass));
+      this.writeCache(KEYS.CUSTOMER_PASSES, JSON.stringify(list));
+      this.writeCache(KEYS.CURRENT_PASS, JSON.stringify(newPass));
     }
     return newPass;
   }
@@ -670,7 +671,7 @@ class StorageService {
   public setCurrentCustomerPass(pass: CustomerPass | null): void {
     if (!this.isBrowser()) return;
     if (pass) {
-      localStorage.setItem(KEYS.CURRENT_PASS, JSON.stringify(pass));
+      this.writeCache(KEYS.CURRENT_PASS, JSON.stringify(pass));
     } else {
       localStorage.removeItem(KEYS.CURRENT_PASS);
     }
@@ -719,7 +720,7 @@ class StorageService {
       list.unshift(offer);
     }
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.OFFERS, JSON.stringify(list));
+      this.writeCache(KEYS.OFFERS, JSON.stringify(list));
     }
     return list;
   }
@@ -727,7 +728,7 @@ class StorageService {
   public deleteOffer(id: string): ContestOffer[] {
     const list = this.getOffers().filter((o) => o.id !== id);
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.OFFERS, JSON.stringify(list));
+      this.writeCache(KEYS.OFFERS, JSON.stringify(list));
     }
     return list;
   }
@@ -847,7 +848,7 @@ class StorageService {
       list.unshift(voucher);
     }
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.VOUCHERS, JSON.stringify(list));
+      this.writeCache(KEYS.VOUCHERS, JSON.stringify(list));
     }
     return list;
   }
@@ -925,7 +926,7 @@ class StorageService {
     }
 
     if (this.isBrowser()) {
-      localStorage.setItem(KEYS.ONLINE_ORDERS, JSON.stringify(list));
+      this.writeCache(KEYS.ONLINE_ORDERS, JSON.stringify(list));
     }
 
     // Auto update drink stats on customer pass
@@ -971,7 +972,7 @@ class StorageService {
   public async updateOrderStatus(
     orderId: string,
     status: OrderStatus,
-    modifications?: { items?: any[]; total?: number; notes?: string }
+    modifications?: { items?: OnlineOrder["items"]; total?: number; notes?: string }
   ): Promise<OnlineOrder | null> {
     const list = this.getOnlineOrders();
     const order = list.find((o) => o.id === orderId);
@@ -982,7 +983,7 @@ class StorageService {
       if (modifications?.notes !== undefined) order.notes = modifications.notes;
 
       if (this.isBrowser()) {
-        localStorage.setItem(KEYS.ONLINE_ORDERS, JSON.stringify(list));
+        this.writeCache(KEYS.ONLINE_ORDERS, JSON.stringify(list));
       }
 
       // Persist status change / modifications to MongoDB
@@ -1010,11 +1011,19 @@ class StorageService {
   /**
    * Sync online orders from MongoDB
    */
-  public async syncOrdersFromMongo(): Promise<OnlineOrder[]> {
+  public syncOrdersFromMongo(): Promise<OnlineOrder[]> {
+    if (!this.ordersPromise) {
+      this.ordersPromise = this.performOrderSync().finally(() => { this.ordersPromise = null; });
+    }
+    return this.ordersPromise;
+  }
+
+  private async performOrderSync(): Promise<OnlineOrder[]> {
     if (!this.isBrowser()) return this.getOnlineOrders();
+    const revision = this.revisions.get(KEYS.ONLINE_ORDERS);
     try {
-      const res = await fetch("/api/orders");
-      const json = await res.json();
+      const json = await apiRequest<{ success: boolean; data: OnlineOrder[] }>("/api/orders");
+      if (revision !== this.revisions.get(KEYS.ONLINE_ORDERS)) return this.getOnlineOrders();
       if (json.success && Array.isArray(json.data)) {
         // Merge with local orders, prioritizing MongoDB for existing orders
         const localList = this.getOnlineOrders();
@@ -1036,11 +1045,11 @@ class StorageService {
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
 
-        localStorage.setItem(KEYS.ONLINE_ORDERS, JSON.stringify(merged));
+        this.writeCache(KEYS.ONLINE_ORDERS, JSON.stringify(merged));
         return merged;
       }
       return this.getOnlineOrders();
-    } catch (e) {
+    } catch {
       return this.getOnlineOrders();
     }
   }
@@ -1063,12 +1072,12 @@ class StorageService {
     try {
       const data = JSON.parse(jsonStr);
       if (data.categories && data.products && data.customers && data.sales) {
-        localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(data.categories));
-        localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(data.products));
-        localStorage.setItem(KEYS.CUSTOMERS, JSON.stringify(data.customers));
-        localStorage.setItem(KEYS.SALES, JSON.stringify(data.sales));
+        this.writeCache(KEYS.CATEGORIES, JSON.stringify(data.categories));
+        this.writeCache(KEYS.PRODUCTS, JSON.stringify(data.products));
+        this.writeCache(KEYS.CUSTOMERS, JSON.stringify(data.customers));
+        this.writeCache(KEYS.SALES, JSON.stringify(data.sales));
         if (data.workers) {
-          localStorage.setItem(KEYS.WORKERS, JSON.stringify(data.workers));
+          this.writeCache(KEYS.WORKERS, JSON.stringify(data.workers));
         }
         return true;
       }

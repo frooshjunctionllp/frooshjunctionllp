@@ -15,14 +15,15 @@ export async function POST(req: Request) {
     }
 
     const trimmedUser = String(username).trim();
+    const escapedUser = trimmedUser.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const trimmedPin = String(pin).trim();
 
     try {
       const { db } = await connectToDatabase();
       const user = await db.collection("workers").findOne({
         $or: [
-          { username: { $regex: new RegExp(`^${trimmedUser}$`, "i") } },
-          { id: { $regex: new RegExp(`^${trimmedUser}$`, "i") } },
+          { username: { $regex: new RegExp(`^${escapedUser}$`, "i") } },
+          { id: { $regex: new RegExp(`^${escapedUser}$`, "i") } },
         ],
       });
 

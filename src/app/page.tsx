@@ -1,27 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Category, Product } from "@/types";
-import { storageService } from "@/services/storageService";
+import { useAppState } from "@/state/AppState";
 import { CustomerView } from "@/components/customer/CustomerView";
 
 export default function Home() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    storageService.init();
-    setCategories(storageService.getCategories());
-    setProducts(storageService.getProducts());
-    setIsLoaded(true);
-
-    // Sync categories & products from MongoDB Atlas in background
-    storageService.syncFromMongo().then((updates) => {
-      if (updates.categories) setCategories(updates.categories);
-      if (updates.products) setProducts(updates.products);
-    });
-  }, []);
+  const { categories, products, isLoaded } = useAppState();
 
   if (!isLoaded) {
     return (

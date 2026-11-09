@@ -1,5 +1,23 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Database and application state
+
+Configure `MONGODB_URI` and `MONGODB_DB` in `.env.local` or your hosting environment. An optional `MONGODB_DIRECT_URI` (a standard `mongodb://` replica-set URI from your database provider) takes precedence when SRV DNS is unreliable. Never commit either connection string. The previous hardcoded direct connection was moved into the ignored local environment file; configure it separately on your host if needed.
+
+The root `AppStateProvider` shares the catalog, customers, sales, workers, offers, orders and current staff session across the customer, admin and staff portals. Form and cart state remain local. Storage writes notify mounted consumers; browser storage events synchronize open tabs. Reads do not trigger network requests. Initial synchronization and order polling deduplicate overlapping requests, and cache revisions protect local writes from older responses.
+
+Menu mutations wait for database confirmation before updating the cache. A failed save keeps the form open and displays the error. Category deletion is blocked while products still refer to it. Empty product/category collections remain empty: normal reads no longer reinsert demo data. New installations should initialize their catalog deliberately using the repository's setup tooling.
+
+Run `npm test` for the storage and persistence regression tests, `npx tsc --noEmit` for type checking, and `npm run build` for production verification.
+
+## Remaining audit findings
+
+- The existing authentication architecture still trusts browser-stored roles, exposes worker PINs to the client, and does not enforce server sessions on management API routes. Server-side authorization, secure session cookies and password hashing require a dedicated authentication migration. The login/state fixes do not make those APIs access-controlled.
+- The installed Next.js version reports a known security vulnerability during build/dev startup and should receive a security upgrade before deployment.
+- Customer passes, offers and reward vouchers still rely on browser storage for parts of their lifecycle. They do not provide durable synchronization between different devices.
+- Customer, staff and sale writes outside menu management still use legacy background persistence; server failures can be missed by those screens.
+- Repository-wide ESLint checks still report legacy issues in other screens and scripts. The shared state, request helper, menu management, database connection and storage regression tests are checked separately.
+
 ## Getting Started
 
 First, run the development server:

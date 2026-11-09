@@ -1,345 +1,138 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import {
-  Store,
-  Layers,
-  Users,
-  BarChart3,
-  Receipt,
-  Sparkles,
-  Clock,
-  Briefcase,
-  Shield,
-  User,
-  ArrowRightLeft,
-  LogOut,
-  ChefHat,
-  Trophy,
-  Globe,
-  Train,
-} from "lucide-react";
-import { AuthSession } from "@/types";
+import { useEffect, useRef, useState, type ComponentType } from "react";
+import { Store, ShoppingBag, Layers, Users, BarChart3, Receipt, Briefcase, ArrowUpRight, ArrowRightLeft, LogOut, ChefHat, Tag, Menu, X, ChevronRight, Clock3 } from "lucide-react";
+import type { AuthSession } from "@/types";
 
-export type ActiveTab =
-  | "pos"
-  | "kds"
-  | "offers"
-  | "menu"
-  | "customers"
-  | "workers"
-  | "sales"
-  | "reports";
+export type ActiveTab = "pos" | "kds" | "offers" | "menu" | "customers" | "workers" | "sales" | "reports";
 
 interface HeaderProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
-  stats: {
-    todaySalesCount: number;
-    todayRevenue: number;
-    totalCustomers: number;
-  };
+  stats: { todaySalesCount: number; todayRevenue: number; totalCustomers: number };
   currentUser: AuthSession | null;
   onOpenAuthModal: () => void;
   onLogout: () => void;
   onOpenCustomerPortal?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
-  activeTab,
-  setActiveTab,
-  stats,
-  currentUser,
-  onOpenAuthModal,
-  onLogout,
-  onOpenCustomerPortal,
-}) => {
-  const [time, setTime] = useState<string>("");
+const sections: { label: string; items: { id: ActiveTab; label: string; icon: ComponentType<{ size?: number }>; adminOnly?: boolean }[] }[] = [
+  { label: "Workspace", items: [
+    { id: "pos", label: "Point of sale", icon: Store },
+    { id: "kds", label: "Live orders", icon: ChefHat },
+    { id: "menu", label: "Menu & categories", icon: Layers, adminOnly: true },
+  ] },
+  { label: "Management", items: [
+    { id: "customers", label: "Customers", icon: Users, adminOnly: true },
+    { id: "workers", label: "Team members", icon: Briefcase, adminOnly: true },
+    { id: "offers", label: "Offers & rewards", icon: Tag, adminOnly: true },
+  ] },
+  { label: "Business", items: [
+    { id: "sales", label: "Sales history", icon: Receipt, adminOnly: true },
+    { id: "reports", label: "Reports & insights", icon: BarChart3, adminOnly: true },
+  ] },
+];
+
+const pageCopy: Record<ActiveTab, { title: string; description: string }> = {
+  pos: { title: "Point of sale", description: "Build an order and manage checkout." },
+  kds: { title: "Live orders", description: "Track preparation, pickup, and completed orders." },
+  menu: { title: "Menu & categories", description: "Manage drinks, sizes, prices, and availability." },
+  customers: { title: "Customers", description: "Customer details, purchase history, and favourite drinks." },
+  workers: { title: "Team members", description: "Manage your team, account access, and shifts." },
+  offers: { title: "Offers & rewards", description: "Manage campaigns, contests, and customer rewards." },
+  sales: { title: "Sales history", description: "Review transactions, payments, and receipts." },
+  reports: { title: "Reports & insights", description: "Explore sales performance and customer trends." },
+};
+
+const currency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+
+export function Header({ activeTab, setActiveTab, stats, currentUser, onOpenAuthModal, onLogout, onOpenCustomerPortal }: HeaderProps) {
+  const [time, setTime] = useState("");
+  const [date, setDate] = useState("");
+  const [navigationOpen, setNavigationOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const navigation = useRef<HTMLElement>(null);
+  const isAdmin = currentUser?.role === "admin";
+  const activeLabel = sections.flatMap((section) => section.items).find((item) => item.id === activeTab)?.label;
+  const initials = currentUser?.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("") || "FJ";
 
   useEffect(() => {
-    const update = () => {
+    const updateClock = () => {
       const now = new Date();
-      setTime(
-        now.toLocaleTimeString("en-IN", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        })
-      );
+      setTime(now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" }));
+      setDate(now.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }));
     };
-    update();
-    const interval = setInterval(update, 1000);
+    updateClock();
+    const interval = setInterval(updateClock, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  const isAdmin = currentUser?.role === "admin";
+  useEffect(() => {
+    if (!navigationOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    navigation.current?.querySelector<HTMLButtonElement>("button")?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setNavigationOpen(false);
+        menuButton.current?.focus();
+      }
+      if (event.key === "Tab") {
+        const buttons = navigation.current?.querySelectorAll<HTMLButtonElement>("button, a[href]");
+        if (!buttons?.length) return;
+        const first = buttons[0];
+        const last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", handleKey); };
+  }, [navigationOpen]);
 
-  // Navigation tabs filtered strictly by role:
-  // Worker CANNOT see sales or reports!
-  const allNavItems: {
-    id: ActiveTab;
-    label: string;
-    shortLabel: string;
-    icon: React.ReactNode;
-    adminOnly?: boolean;
-  }[] = [
-    {
-      id: "pos",
-      label: "POS Order",
-      shortLabel: "POS",
-      icon: <Store className="w-4 h-4" />,
-    },
-    {
-      id: "kds",
-      label: "Orders",
-      shortLabel: "Orders",
-      icon: <ChefHat className="w-4 h-4" />,
-    },
-    {
-      id: "offers",
-      label: "Contests & Deals",
-      shortLabel: "Contests",
-      icon: <Trophy className="w-4 h-4" />,
-      adminOnly: true,
-    },
-    {
-      id: "menu",
-      label: "Menu & Items",
-      shortLabel: "Menu",
-      icon: <Layers className="w-4 h-4" />,
-      adminOnly: true,
-    },
-    {
-      id: "customers",
-      label: "Customers",
-      shortLabel: "Clients",
-      icon: <Users className="w-4 h-4" />,
-      adminOnly: true,
-    },
-    {
-      id: "workers",
-      label: "Staff & Workers",
-      shortLabel: "Workers",
-      icon: <Briefcase className="w-4 h-4" />,
-      adminOnly: true,
-    },
-    {
-      id: "sales",
-      label: "Sales Log",
-      shortLabel: "Sales",
-      icon: <Receipt className="w-4 h-4" />,
-      adminOnly: true,
-    },
-    {
-      id: "reports",
-      label: "Reports & BI",
-      shortLabel: "Reports",
-      icon: <BarChart3 className="w-4 h-4" />,
-      adminOnly: true,
-    },
-  ];
+  const closeNavigation = () => { setNavigationOpen(false); menuButton.current?.focus(); };
+  const selectTab = (tab: ActiveTab) => {
+    setActiveTab(tab);
+    if (navigationOpen) closeNavigation();
+    window.scrollTo({ top: 0, behavior: "instant" });
+  };
 
-  const visibleNavItems = allNavItems.filter(
-    (item) => !item.adminOnly || isAdmin
-  );
-
-  return (
-    <>
-      {/* Top Header */}
-      <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-40">
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
-          {/* Brand Logo & Tag */}
-          <div className="flex items-center gap-3">
-            <img
-              src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
-              alt="Froosh Junction"
-              className="h-9 sm:h-11 w-auto object-contain"
-            />
-            <div className="flex flex-col hidden sm:flex">
-              <span className="font-pixel text-[11px] text-slate-900 tracking-wider">
-                OPERATIONS PORTAL
-              </span>
-              <p className="text-[10px] text-slate-500 font-medium">
-                Live POS & Real-Time Orders
-              </p>
-            </div>
-
-            {/* Dashboard role pill */}
-            <span
-              className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border hidden sm:inline-flex items-center gap-1.5 ${
-                isAdmin
-                  ? "bg-red-50 text-red-700 border-red-200/80"
-                  : "bg-emerald-50 text-emerald-700 border-emerald-200/80"
-              }`}
-            >
-              {isAdmin ? (
-                <>
-                  <Shield className="w-3 h-3" />
-                  <span>Admin</span>
-                </>
-              ) : (
-                <>
-                  <User className="w-3 h-3" />
-                  <span>Worker Shift</span>
-                </>
-              )}
-            </span>
-          </div>
-
-          {/* User profile & Stats Area */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Live Ticker: Admin sees Revenue, Worker sees terminal active info */}
-            {isAdmin ? (
-              <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5 text-xs shadow-2xs">
-                <div className="flex items-center gap-1.5 text-slate-800">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-slate-500 font-medium text-[11px]">
-                    Today:
-                  </span>
-                  <span className="font-bold text-xs sm:text-sm text-red-600">
-                    ₹{stats.todayRevenue.toFixed(0)}
-                  </span>
-                  <span className="text-slate-400 hidden lg:inline font-normal text-[11px]">
-                    ({stats.todaySalesCount} orders)
-                  </span>
-                </div>
-
-                <div className="h-3 w-px bg-slate-200 hidden sm:block" />
-
-                <div className="hidden sm:flex items-center gap-1 text-slate-700 font-medium text-xs">
-                  <span className="text-slate-400 text-[11px]">Clients:</span>
-                  <span className="font-bold text-slate-800">
-                    {stats.totalCustomers}
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 bg-emerald-50/80 border border-emerald-200/80 rounded-xl px-3 py-1.5 text-xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="font-bold text-emerald-800 text-[11px] sm:text-xs">
-                  Terminal Ready
-                </span>
-                <span className="text-slate-500 text-[11px] hidden sm:inline">
-                  • {currentUser?.name || "Worker"}
-                </span>
-              </div>
-            )}
-
-            {/* Time on large screens */}
-            <div className="hidden xl:flex items-center gap-1.5 text-slate-600 font-medium text-xs bg-slate-50 border border-slate-200/80 rounded-xl px-2.5 py-1.5">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-slate-700 font-semibold">{time || "--:--:--"}</span>
-            </div>
-
-            {/* Auth / Switch User Button */}
-            <button
-              onClick={onOpenAuthModal}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                isAdmin
-                  ? "bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200"
-                  : "bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-200"
-              }`}
-              title="Switch user or login"
-            >
-              {isAdmin ? (
-                <Shield className="w-3.5 h-3.5 text-amber-700" />
-              ) : (
-                <User className="w-3.5 h-3.5 text-slate-600" />
-              )}
-              <span className="max-w-[80px] sm:max-w-[110px] truncate">
-                {currentUser?.name || "Login"}
-              </span>
-              <ArrowRightLeft className="w-3 h-3 text-slate-400 shrink-0" />
-            </button>
-
-            {/* Customer Storefront / QR Website View */}
-            {onOpenCustomerPortal && (
-              <button
-                onClick={onOpenCustomerPortal}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-400 bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-bold transition-all cursor-pointer shadow-2xs"
-                title="View customer QR storefront & website"
-              >
-                <Globe className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Customer (QR)</span>
-              </button>
-            )}
-
-            {/* Logout Button */}
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-200/80 bg-red-50 hover:bg-red-100 active:bg-red-200 text-red-600 text-xs font-semibold transition-all cursor-pointer"
-              title="Lock terminal and sign out"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Desktop & Tablet Navigation Tabs */}
-        <div className="bg-slate-50/70 border-t border-slate-200/60 hidden md:block">
-          <div className="w-full px-4 sm:px-6 lg:px-8 flex overflow-x-auto no-scrollbar gap-1.5 py-1.5">
-            {visibleNavItems.map((item) => {
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-white text-red-600 shadow-2xs border border-slate-200/80"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 border border-transparent"
-                  }`}
-                >
-                  <span className={isActive ? "text-red-600" : "text-slate-400"}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Sticky Bottom Navigation Bar (Filtered by role: 3 tabs for worker, 5 for admin) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 shadow-xl">
-        <div
-          className={`grid py-1.5 ${
-            visibleNavItems.length === 3
-              ? "grid-cols-3"
-              : visibleNavItems.length === 4
-              ? "grid-cols-4"
-              : "grid-cols-5"
-          }`}
-        >
-          {visibleNavItems.slice(0, 5).map((item) => {
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex flex-col items-center justify-center py-1.5 px-0.5 text-center transition-all cursor-pointer ${
-                  isActive
-                    ? "text-red-600 font-bold bg-red-50/50"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
-              >
-                <div
-                  className={`p-1 rounded-full ${
-                    isActive ? "text-red-600" : "text-slate-500"
-                  }`}
-                >
-                  {item.icon}
-                </div>
-                <span className="text-[10px] leading-tight block truncate w-full font-medium">
-                  {item.shortLabel}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+  return <>
+    <a href="#dashboard-content" className="dashboard-skip-link">Skip to workspace</a>
+    {navigationOpen && <button className="dashboard-nav-scrim" onClick={closeNavigation} aria-label="Close navigation" tabIndex={-1} />}
+    <aside ref={navigation} id="dashboard-navigation" className={`dashboard-sidebar ${navigationOpen ? "is-open" : ""}`} aria-label="Workspace navigation" role={navigationOpen ? "dialog" : undefined} aria-modal={navigationOpen || undefined}>
+      <div className="dashboard-brand">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png" alt="Froosh Junction" />
+        <button className="dashboard-nav-close" onClick={closeNavigation} aria-label="Close navigation"><X size={19} /></button>
+      </div>
+      <div className="dashboard-location"><span className="dashboard-location-icon"><Store size={17} /></span><div><strong>Entally, Kolkata</strong><span>{isAdmin ? "Store management" : "Staff terminal"}</span></div><span className="dashboard-status-dot" /></div>
+      <nav aria-label="Main navigation" className="dashboard-nav">
+        {sections.map((section) => {
+          const items = section.items.filter((item) => !item.adminOnly || isAdmin);
+          return items.length > 0 && <div className="dashboard-nav-group" key={section.label}>
+            <p>{section.label}</p>
+            {items.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => selectTab(id)} className={`dashboard-nav-item ${activeTab === id ? "is-active" : ""}`} aria-current={activeTab === id ? "page" : undefined}><Icon size={18} /><span>{label}</span>{activeTab === id && <span className="dashboard-nav-indicator" />}</button>)}
+          </div>;
+        })}
       </nav>
-    </>
-  );
-};
+      <div className="dashboard-sidebar-bottom">
+        {onOpenCustomerPortal && <button onClick={onOpenCustomerPortal} className="dashboard-storefront"><span>Customer storefront<small>Open the QR menu</small></span><ArrowUpRight size={18} /></button>}
+        <div className="dashboard-profile"><span className="dashboard-avatar">{initials}</span><div><strong title={currentUser?.name}>{currentUser?.name || "Team member"}</strong><small>{isAdmin ? "Store administrator" : "Team member"}</small></div>{isAdmin && <button onClick={onOpenAuthModal} className="dashboard-icon-button" aria-label="Switch account" title="Switch account"><ArrowRightLeft size={16} /></button>}</div>
+        <button className="dashboard-signout" onClick={onLogout}><LogOut size={16} /><span>{isAdmin ? "Sign out" : "End shift & sign out"}</span></button>
+      </div>
+    </aside>
+    <header className="dashboard-topbar">
+      <div className="dashboard-breadcrumb"><button ref={menuButton} className="dashboard-menu-button dashboard-icon-button" aria-label="Open navigation" aria-expanded={navigationOpen} aria-controls="dashboard-navigation" onClick={() => setNavigationOpen(true)}><Menu size={21} /></button><span>Workspace</span><ChevronRight size={13} /><strong>{activeLabel}</strong></div>
+      <div className="dashboard-topbar-meta"><span className="dashboard-date">{date}</span><span className="dashboard-clock"><Clock3 size={14} />{time}</span><span className="dashboard-access-label">{isAdmin ? "Admin" : "Staff"}</span></div>
+    </header>
+    <section className="dashboard-page-intro" aria-labelledby="dashboard-page-title">
+      <div><h1 id="dashboard-page-title">{pageCopy[activeTab].title}</h1><p className="dashboard-page-description">{pageCopy[activeTab].description}</p></div>
+    </section>
+    {isAdmin && activeTab === "pos" && <section className="dashboard-metrics" aria-label="Store summary">
+      <div><span className="dashboard-metric-icon"><Receipt size={19} /></span><div><p>Today&apos;s revenue</p><strong>{currency.format(stats.todayRevenue)}</strong></div><span className="dashboard-metric-note">Today</span></div>
+      <div><span className="dashboard-metric-icon"><ShoppingBag size={19} /></span><div><p>Counter sales today</p><strong>{stats.todaySalesCount.toLocaleString("en-IN")}</strong></div><span className="dashboard-metric-note">Receipts</span></div>
+      <div><span className="dashboard-metric-icon"><Users size={19} /></span><div><p>Customer directory</p><strong>{stats.totalCustomers.toLocaleString("en-IN")}</strong></div><span className="dashboard-metric-note">All time</span></div>
+    </section>}
+  </>;
+}

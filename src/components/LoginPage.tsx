@@ -62,6 +62,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
+        signal: AbortSignal.timeout(15000),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: inputUser, pin: inputPin }),
       });

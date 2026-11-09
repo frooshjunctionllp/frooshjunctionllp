@@ -82,7 +82,7 @@ export default function CustomerLoginPage() {
       }
 
       // 2. Query MongoDB Atlas customers by phone
-      const res = await fetch(`/api/customers?phone=${encodeURIComponent(cleanPhone)}`);
+      const res = await fetch(`/api/customers?phone=${encodeURIComponent(cleanPhone)}`, { signal: AbortSignal.timeout(15000) });
       const data = await res.json();
 
       if (data.success && data.customer) {

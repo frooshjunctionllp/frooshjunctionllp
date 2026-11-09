@@ -1,15 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
-  Category,
   Customer,
-  Product,
   Sale,
-  WorkerUser,
   AuthSession,
   OnlineOrder,
 } from "@/types";
+import { useAppState } from "@/state/AppState";
 import { storageService } from "@/services/storageService";
 import { Header, ActiveTab } from "@/components/Header";
 import { PosTerminal } from "@/components/PosTerminal";
@@ -19,89 +18,44 @@ import { ReceiptModal } from "@/components/ReceiptModal";
 import { StaffLoginForm } from "@/components/StaffLoginForm";
 
 export default function StaffPortalPage() {
+  const router = useRouter();
   // Staff is restricted strictly to "pos" and "kds"
+  const { categories, products, customers, workers, onlineOrders, currentUser, isLoaded } = useAppState();
   const [activeTab, setActiveTab] = useState<ActiveTab>("pos");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [workers, setWorkers] = useState<WorkerUser[]>([]);
-  const [onlineOrders, setOnlineOrders] = useState<OnlineOrder[]>([]);
-  const [currentUser, setCurrentUser] = useState<AuthSession | null>(null);
   const [activeReceiptSale, setActiveReceiptSale] = useState<Sale | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  const refreshData = () => {
-    storageService.init();
-    setCategories(storageService.getCategories());
-    setProducts(storageService.getProducts());
-    setCustomers(storageService.getCustomers());
-    setWorkers(storageService.getWorkers());
-    setOnlineOrders(storageService.getOnlineOrders());
-    const user = storageService.getCurrentUser();
-    // Accept worker or staff session
-    setCurrentUser(user);
-  };
-
-  useEffect(() => {
-    refreshData();
-    setIsLoaded(true);
-
-    // Sync categories & products from MongoDB
-    storageService.syncFromMongo().then((updates) => {
-      if (updates.categories) setCategories(updates.categories);
-      if (updates.products) setProducts(updates.products);
-      if (updates.customers) setCustomers(updates.customers);
-      if (updates.workers) setWorkers(updates.workers);
-      if (updates.orders) setOnlineOrders(updates.orders);
-    });
-  }, []);
 
   // Poll online orders from MongoDB in real time every 2.5 seconds
   useEffect(() => {
-    if (currentUser) {
-      storageService.syncOrdersFromMongo().then((orders) => {
-        setOnlineOrders(orders);
-      });
+    if (currentUser?.id) {
+      void storageService.syncOrdersFromMongo();
       const interval = setInterval(() => {
-        storageService.syncOrdersFromMongo().then((orders) => {
-          setOnlineOrders(orders);
-        });
+        void storageService.syncOrdersFromMongo();
       }, 2500);
       return () => clearInterval(interval);
     }
-  }, [currentUser]);
-
-  // Strict guard: Workers can NEVER be on sales, reports, workers, menu, or offers
-  useEffect(() => {
-    if (activeTab !== "pos" && activeTab !== "kds") {
-      setActiveTab("pos");
-    }
-  }, [activeTab]);
+  }, [currentUser?.id]);
 
   // Online Order Action Handlers
   const handleConfirmOnlineOrder = async (orderId: string) => {
     await storageService.updateOrderStatus(orderId, "accepted");
-    const fresh = await storageService.syncOrdersFromMongo();
-    setOnlineOrders(fresh);
+    await storageService.syncOrdersFromMongo();
   };
 
   const handleRejectOnlineOrder = async (orderId: string, reason?: string) => {
     await storageService.updateOrderStatus(orderId, "cancelled", { notes: reason });
-    const fresh = await storageService.syncOrdersFromMongo();
-    setOnlineOrders(fresh);
+    await storageService.syncOrdersFromMongo();
   };
 
   const handleModifyOnlineOrder = async (
     orderId: string,
-    modifications: { items: any[]; total: number; notes?: string }
+    modifications: { items: OnlineOrder["items"]; total: number; notes?: string }
   ) => {
     await storageService.updateOrderStatus(orderId, "accepted", modifications);
-    const fresh = await storageService.syncOrdersFromMongo();
-    setOnlineOrders(fresh);
+    await storageService.syncOrdersFromMongo();
   };
 
   const nextCustomerId = useMemo(() => {
-    return storageService.getNextCustomerId();
+    return storageService.getNextCustomerId(customers);
   }, [customers]);
 
   // Header stats for worker: ZERO revenue exposed
@@ -114,8 +68,7 @@ export default function StaffPortalPage() {
   }, [customers]);
 
   const handleSaveCustomer = (customer: Customer) => {
-    const updated = storageService.saveCustomer(customer);
-    setCustomers(updated);
+    storageService.saveCustomer(customer);
   };
 
   const handleRecordSale = (sale: Sale) => {
@@ -124,13 +77,12 @@ export default function StaffPortalPage() {
 
   const handleLoginSuccess = (user: AuthSession) => {
     storageService.setCurrentUser(user);
-    setCurrentUser(user);
+
     setActiveTab("pos");
   };
 
   const handleLogout = () => {
     storageService.logout();
-    setCurrentUser(null);
   };
 
   if (!isLoaded) {
@@ -163,7 +115,7 @@ export default function StaffPortalPage() {
         workers={workers}
         onBackToCustomer={() => {
           if (typeof window !== "undefined") {
-            window.location.href = "/";
+            router.push("/");
           }
         }}
       />
@@ -172,44 +124,24 @@ export default function StaffPortalPage() {
 
   // 2. Staff Operations Portal (Locked strictly to POS & KDS Order Confirmation)
   return (
-    <div className="min-h-screen bg-[#FAF7EE] text-slate-800 flex flex-col font-sans">
+    <div className="dashboard-shell flex flex-col font-sans">
       {/* Top Header & Navigation */}
       <Header
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={(tab) => { if (tab === "pos" || tab === "kds") setActiveTab(tab); }}
         stats={headerStats}
         currentUser={{ ...currentUser, role: "worker" }} // Force worker scope: strictly hides sales & reports
         onOpenAuthModal={() => {}}
         onLogout={handleLogout}
         onOpenCustomerPortal={() => {
           if (typeof window !== "undefined") {
-            window.location.href = "/";
+            router.push("/");
           }
         }}
       />
 
-      {/* Staff Operational Shift Banner */}
-      <div className="w-full px-4 sm:px-6 lg:px-8 mt-3">
-        <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs text-emerald-900 font-mono">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>
-              <strong>Active Shift:</strong> Logged in as{" "}
-              <span className="font-bold underline text-emerald-950">{currentUser?.name}</span>{" "}
-              ({currentUser?.id || currentUser?.username}) • Order Intake & Ticket Dispatch Mode
-            </span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-[11px] font-bold text-red-700 hover:text-red-900 bg-red-100 hover:bg-red-200 px-3 py-1 rounded-xl transition-colors cursor-pointer shrink-0 ml-2"
-          >
-            End Shift / Sign Out
-          </button>
-        </div>
-      </div>
-
       {/* Main Content Body: ONLY POS AND KDS ALLOWED */}
-      <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <main id="dashboard-content" tabIndex={-1} className="dashboard-workspace">
         {activeTab === "pos" && (
           <PosTerminal
             categories={categories}

@@ -346,13 +346,13 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
 
   // Reusable Checkout Sheet Contents
   const OrderCheckoutContent = (
-    <div className="space-y-4">
+    <div className="pos-checkout-content space-y-4">
       {/* Customer Bar */}
       <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-3.5 space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
             <UserCheck className="w-4 h-4 text-red-600" />
-            <span>Customer Assignment</span>
+            <span>Customer</span>
           </div>
 
           <div className="flex bg-white rounded-lg p-0.5 border border-slate-200/80 shadow-2xs">
@@ -368,7 +368,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Select Existing
+              Existing
             </button>
             <button
               type="button"
@@ -382,7 +382,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              + New Client
+              New customer
             </button>
           </div>
         </div>
@@ -394,6 +394,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
               <input
                 type="text"
                 placeholder="Search by ID, name, phone, or insta..."
+                aria-label="Search customers for this order"
                 value={customerSearch}
                 onChange={(e) => setCustomerSearch(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
@@ -401,10 +402,12 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
             </div>
 
             <select
+              aria-label="Customer for this order"
               value={selectedCustomerId}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
               className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
             >
+              <option value="" disabled>Select a customer</option>
               {filteredCustomers.map((cust) => (
                 <option key={cust.id} value={cust.id}>
                   #{cust.id} - {cust.name} ({cust.gender}) {cust.phone || ""}
@@ -536,9 +539,10 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
 
         <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
           {cart.length === 0 ? (
-            <div className="text-center py-8 text-slate-400 text-xs border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-              <ShoppingBag className="w-8 h-8 mx-auto mb-1.5 text-slate-300" />
-              Order cart is empty. Tap any drink size to add!
+            <div className="pos-cart-empty">
+              <ShoppingBag />
+              <strong>A little empty in here</strong>
+              <p>Add a drink from the menu to start this order.</p>
             </div>
           ) : (
             cart.map((item, index) => (
@@ -674,7 +678,9 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
         </div>
       </div>
 
-      {/* Discount & Time */}
+      {/* Additional billing controls */}
+      <details className="pos-bill-options">
+        <summary>Discount & bill date{discount > 0 ? ` · ₹${discount.toFixed(0)} off` : ""}</summary>
       <div className="grid grid-cols-2 gap-2">
         <div>
           <div className="flex items-center justify-between mb-1">
@@ -724,6 +730,8 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
         </div>
       </div>
 
+      </details>
+
       {/* Financials Breakdown */}
       <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/90 space-y-1.5 text-xs">
         <div className="flex justify-between text-slate-500 font-medium">
@@ -770,25 +778,28 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
       <button
         onClick={handleCompleteSale}
         disabled={cart.length === 0}
-        className="w-full py-3.5 bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white rounded-2xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all"
+        className="pos-checkout-button w-full py-3.5 bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white flex items-center justify-center gap-2 disabled:cursor-not-allowed"
       >
-        <Sparkles className="w-4 h-4 text-yellow-300" />
-        <span>Complete Sale & Bill Receipt (₹{grandTotal.toFixed(0)})</span>
+        <CheckCircle2 className="w-4 h-4" />
+        <span>Complete sale · ₹{grandTotal.toFixed(0)}</span>
       </button>
     </div>
   );
 
   return (
-    <div className="space-y-4 pb-28 md:pb-6 font-sans">
+    <div className="pos-terminal space-y-4 pb-28 md:pb-6 font-sans">
+      <div className="pos-layout">
+        <div className="min-w-0 space-y-4">
       {/* Top Filter & View Controls */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-3 sm:p-4 shadow-2xs space-y-3">
+      <div className="pos-toolbar space-y-3">
         {/* Search & Mode Bar */}
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search juices, shakes, smoothies..."
+              placeholder="Search your menu..."
+              aria-label="Search menu"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200/80 rounded-xl pl-9 pr-8 py-2 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:bg-white font-medium transition-all"
@@ -796,6 +807,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
+                aria-label="Clear menu search"
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
@@ -840,16 +852,17 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
         </div>
 
         {/* Categories Bar */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar pt-0.5">
+        <div className="pos-category-tabs flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar pt-0.5" aria-label="Drink categories">
           <button
             onClick={() => setSelectedCategory("all")}
+            aria-pressed={selectedCategory === "all"}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               selectedCategory === "all"
                 ? "bg-slate-900 text-white shadow-2xs"
                 : "bg-slate-50 text-slate-600 border border-slate-200/80 hover:bg-slate-100"
             }`}
           >
-            All Items ({products.length})
+            All drinks ({products.length})
           </button>
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat.id;
@@ -858,6 +871,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
+                aria-pressed={isSelected}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isSelected
                     ? "bg-red-600 text-white shadow-2xs"
@@ -872,23 +886,25 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
       </div>
 
       {/* Main Content: Drink Catalog + Order Sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* DRINK CATALOG: Responsive Grid or Cashier Speed List */}
-        <div className="lg:col-span-7 xl:col-span-8">
           {viewMode === "grid" ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-3.5">
+            <div className="pos-product-grid">
               {filteredProducts.map((prod) => {
                 const cat = categories.find((c) => c.id === prod.categoryId);
                 return (
                   <div
                     key={prod.id}
-                    className="bg-white border border-slate-200/80 rounded-2xl p-3 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-slate-300 transition-all group"
+                    className="pos-product-card flex flex-col justify-between transition-all group"
                   >
                     <div>
                       {/* 1:1 Image */}
                       <div
                         onClick={() => openDrinkQuickModal(prod)}
-                        className="relative w-full aspect-square bg-slate-50 rounded-xl overflow-hidden mb-2.5 flex items-center justify-center border border-slate-100 cursor-pointer"
+                        className="pos-product-image bg-slate-50 overflow-hidden flex items-center justify-center cursor-pointer"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Customize ${prod.name}`}
+                        onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openDrinkQuickModal(prod); } }}
                       >
                         {prod.imageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -920,11 +936,11 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
                     </div>
 
                     {/* Size Variants: Sleek, high-contrast rows */}
-                    <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1.5">
+                    <div className="pos-variant-list border-t border-slate-100 space-y-1">
                       {prod.variants.map((v) => (
                         <div
                           key={v.id}
-                          className="p-1.5 sm:p-2 bg-slate-50/80 hover:bg-slate-100/80 rounded-xl border border-slate-100 transition-colors flex items-center justify-between gap-1.5"
+                          className="pos-variant-row flex items-center justify-between gap-1.5"
                         >
                           <div className="min-w-0 pr-1">
                             <div className="text-[11px] sm:text-xs font-medium text-slate-800 leading-tight truncate">
@@ -937,6 +953,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
 
                           <button
                             onClick={() => handleAddToCart(prod, v)}
+                            aria-label={`Add ${prod.name}, ${v.name}`}
                             className="px-2.5 py-1 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-semibold text-xs rounded-lg shadow-2xs cursor-pointer transition-all flex items-center gap-1 shrink-0"
                           >
                             <Plus className="w-3.5 h-3.5" />
@@ -1024,13 +1041,13 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
         </div>
 
         {/* RIGHT COLUMN: ACTIVE ORDER CART (Desktop Sticky Sidebar) */}
-        <div className="hidden lg:block lg:col-span-5 xl:col-span-4">
-          <div className="bg-white border border-slate-200/80 rounded-3xl shadow-sm p-4 sticky top-24 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <div className="pos-cart">
+          <div className="pos-cart-panel">
+            <div className="pos-cart-heading">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4 text-red-600" />
                 <h2 className="font-bold text-sm text-slate-900">
-                  Active Order Cart
+                  Current order
                 </h2>
               </div>
               <span className="bg-slate-100 text-slate-700 font-semibold text-xs px-2.5 py-0.5 rounded-full">
@@ -1196,7 +1213,7 @@ export const PosTerminal: React.FC<PosTerminalProps> = ({
       )}
 
       {/* FLOATING MOBILE CART BAR (Persistent above mobile bottom navigation) */}
-      <div className="lg:hidden fixed bottom-16 sm:bottom-18 left-0 right-0 z-30 px-3 py-2 pointer-events-none">
+      <div className="pos-mobile-cart lg:hidden fixed bottom-0 left-0 right-0 z-30 px-3 py-2 pointer-events-none">
         <div className="w-full max-w-lg mx-auto pointer-events-auto">
           <button
             onClick={() => setIsOrderModalOpen(true)}

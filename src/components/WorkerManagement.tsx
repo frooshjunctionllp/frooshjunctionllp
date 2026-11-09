@@ -120,7 +120,7 @@ export const WorkerManagement: React.FC<WorkerManagementProps> = ({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Top Banner & Action */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs">
+      <div className="dashboard-panel">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -128,11 +128,11 @@ export const WorkerManagement: React.FC<WorkerManagementProps> = ({
                 <Briefcase className="w-5 h-5" />
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                Staff & Worker Management
+                Your team
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Create and manage staff logins. Workers can operate POS & create customers, but cannot view sales logs or business reports.
+              Create accounts, manage access, and keep your store running.
             </p>
           </div>
 
@@ -141,7 +141,7 @@ export const WorkerManagement: React.FC<WorkerManagementProps> = ({
             className="w-full sm:w-auto flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold px-4 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer text-sm"
           >
             <UserPlus className="w-4 h-4" />
-            <span>Create New Worker</span>
+            <span>Add team member</span>
           </button>
         </div>
 
@@ -172,7 +172,7 @@ export const WorkerManagement: React.FC<WorkerManagementProps> = ({
           return (
             <div
               key={worker.id}
-              className={`bg-white border-2 rounded-2xl p-4 flex flex-col justify-between transition-all shadow-xs ${
+              className={`bg-white border rounded-xl p-4 flex flex-col justify-between transition-all shadow-xs ${
                 worker.role === "admin"
                   ? "border-amber-300 bg-amber-50/20"
                   : worker.isActive

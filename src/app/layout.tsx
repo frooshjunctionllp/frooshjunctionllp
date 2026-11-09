@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Poppins, Press_Start_2P } from "next/font/google";
 import "./globals.css";
+import "./dashboard.css";
+import { AppStateProvider } from "@/state/AppState";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -29,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${poppins.variable} ${pixelFont.variable}`}>
       <body className="bg-[#F8FAFC] text-slate-900 min-h-screen selection:bg-amber-300 selection:text-slate-900 antialiased font-sans">
-        {children}
+        <AppStateProvider>{children}</AppStateProvider>
       </body>
     </html>
   );

@@ -52,7 +52,7 @@ export const SalesLog: React.FC<SalesLogProps> = ({
   return (
     <div className="space-y-6 pb-20 md:pb-6 font-sans">
       {/* Search & Header */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-xs">
+      <div className="dashboard-panel space-y-3">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
           <div>
             <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export const SalesLog: React.FC<SalesLogProps> = ({
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Complete chronological ledger of all customer juice & shake purchases.
+              A record of every order, payment, and receipt.
             </p>
           </div>
 
@@ -86,7 +86,7 @@ export const SalesLog: React.FC<SalesLogProps> = ({
           </div>
 
           {/* Payment Method Filter */}
-          <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-1">
+          <div className="dashboard-filter-tabs flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-1">
             <span className="text-xs font-semibold text-slate-500 px-2">Payment:</span>
             {["all", "cash", "card", "upi", "other"].map((pm) => (
               <button

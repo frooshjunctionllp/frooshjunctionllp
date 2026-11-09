@@ -116,27 +116,27 @@ export const ContestOfferManager: React.FC<ContestOfferManagerProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="campaign-manager space-y-6">
       {/* Top Banner */}
-      <div className="border-3 border-slate-900 bg-amber-400 rounded-xl p-4 shadow-[4px_4px_0px_#0f172a] flex flex-wrap items-center justify-between gap-3">
+      <div className="dashboard-panel flex flex-wrap items-center justify-between gap-3">
         <div>
           <span className="text-[10px] uppercase font-bold text-slate-800 font-mono">
-            CAMPAIGN & TOURNAMENT ENGINE
+            CUSTOMER REWARDS
           </span>
           <h2 className="text-xl font-black text-slate-950 uppercase font-mono">
-            Offers & Drink Championship Management
+            Offers & campaigns
           </h2>
           <p className="text-xs text-slate-800 mt-0.5">
-            Create date-bound contests (e.g. Most Shakes = 100 Free Shakes), daily happy hours, or digital punchcards.
+            Happy hours, seasonal contests, and a little extra for your regulars.
           </p>
         </div>
 
         <button
           onClick={() => setIsCreating(!isCreating)}
-          className="bg-slate-950 hover:bg-slate-800 text-amber-300 border-2 border-slate-950 font-mono font-bold text-xs px-4 py-2.5 rounded-lg shadow-[2px_2px_0px_#000] flex items-center gap-1.5 cursor-pointer transition-all"
+          className="pixel-btn-red text-xs px-4 py-2.5 flex items-center gap-1.5"
         >
           <Plus className="w-4 h-4" />
-          <span>{isCreating ? "Cancel" : "Create Custom Campaign"}</span>
+          <span>{isCreating ? "Cancel" : "Create campaign"}</span>
         </button>
       </div>
 
@@ -156,7 +156,7 @@ export const ContestOfferManager: React.FC<ContestOfferManagerProps> = ({
           <div className="border-b-2 border-slate-200 pb-2">
             <h3 className="text-sm font-black text-slate-950 uppercase flex items-center gap-2">
               <Trophy className="w-4 h-4 text-amber-500" />
-              <span>Full-Freedom Campaign Builder</span>
+              <span>New campaign</span>
             </h3>
           </div>
 

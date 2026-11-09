@@ -47,6 +47,7 @@ export const AdminLoginForm: React.FC<AdminLoginFormProps> = ({
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
+        signal: AbortSignal.timeout(15000),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: inputUser, pin: inputPin }),
       });
@@ -62,16 +63,13 @@ export const AdminLoginForm: React.FC<AdminLoginFormProps> = ({
         // Authentication verified! Trigger sleek success screen and instant redirect
         setIsSuccess(true);
         onLoginSuccess(data.user);
-
-        setTimeout(() => {
-          window.location.href = "/admin";
-        }, 700);
         return;
       } else {
         setErrorMsg(data.message || "Invalid Admin credentials. Check ID and Password.");
         setIsLoading(false);
       }
     } catch {
+      setIsSuccess(false);
       // Local fallback check
       const matched = workers.find(
         (w) =>
@@ -94,9 +92,6 @@ export const AdminLoginForm: React.FC<AdminLoginFormProps> = ({
           };
           setIsSuccess(true);
           onLoginSuccess(session);
-          setTimeout(() => {
-            window.location.href = "/admin";
-          }, 700);
           return;
         }
       } else {

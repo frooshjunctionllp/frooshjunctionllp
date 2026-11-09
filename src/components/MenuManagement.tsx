@@ -6,24 +6,24 @@ import {
   Plus,
   Edit2,
   Trash2,
-  Check,
   X,
   Layers,
   FolderPlus,
   Sparkles,
-  Tag,
+  GlassWater,
+  Milk,
+  Flame,
   AlertCircle,
   Image as ImageIcon,
-  ExternalLink,
 } from "lucide-react";
 
 interface MenuManagementProps {
   categories: Category[];
   products: Product[];
-  onSaveCategory: (category: Category) => void;
-  onDeleteCategory: (categoryId: string) => void;
-  onSaveProduct: (product: Product) => void;
-  onDeleteProduct: (productId: string) => void;
+  onSaveCategory: (category: Category) => Promise<void>;
+  onDeleteCategory: (categoryId: string) => Promise<void>;
+  onSaveProduct: (product: Product) => Promise<void>;
+  onDeleteProduct: (productId: string) => Promise<void>;
 }
 
 export const MenuManagement: React.FC<MenuManagementProps> = ({
@@ -36,6 +36,17 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
 }) => {
   const [selectedCategoryTab, setSelectedCategoryTab] = useState<string>("all");
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [menuError, setMenuError] = useState("");
+  const [imageFailed, setImageFailed] = useState(false);
+  const deleteItem = async (action: () => Promise<void>) => {
+    if (isSaving) return;
+    setMenuError("");
+    setIsSaving(true);
+    try { await action(); }
+    catch (error) { setMenuError(error instanceof Error ? error.message : "Could not delete item."); }
+    finally { setIsSaving(false); }
+  };
   // Category Modal State
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -75,9 +86,9 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
     setIsCategoryModalOpen(true);
   };
 
-  const handleSaveCategory = (e: React.FormEvent) => {
+  const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!catName.trim()) return;
+    if (isSaving || !catName.trim()) return;
 
     const newCategory: Category = {
       id: editingCategory ? editingCategory.id : `cat-${Date.now()}`,
@@ -88,12 +99,19 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
       color: catColor,
     };
 
-    onSaveCategory(newCategory);
-    setIsCategoryModalOpen(false);
+    setIsSaving(true);
+    setMenuError("");
+    try {
+      await onSaveCategory(newCategory);
+      setIsCategoryModalOpen(false);
+    } catch (error) {
+      setMenuError(error instanceof Error ? error.message : "Could not save category.");
+    } finally { setIsSaving(false); }
   };
 
   const handleOpenProductModal = (prod?: Product) => {
     setProductError("");
+    setImageFailed(false);
     if (prod) {
       setEditingProduct(prod);
       setProdName(prod.name);
@@ -151,10 +169,11 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
     setProdVariants(prodVariants.filter((_, i) => i !== index));
   };
 
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setProductError("");
 
+    if (isSaving) return;
     if (!prodName.trim()) {
       setProductError("Please enter product name");
       return;
@@ -168,6 +187,14 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
       return;
     }
 
+    if (!categories.some((category) => category.id === prodCategoryId)) {
+      setProductError("Please choose an existing category.");
+      return;
+    }
+    if (prodVariants.some((variant) => !variant.name.trim() || !Number.isFinite(variant.price) || variant.price < 0)) {
+      setProductError("Each size needs a name and a valid non-negative price.");
+      return;
+    }
     const newProd: Product = {
       id: editingProduct ? editingProduct.id : `prod-${Date.now()}`,
       name: prodName.trim(),
@@ -180,8 +207,14 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
       variants: prodVariants,
     };
 
-    onSaveProduct(newProd);
-    setIsProductModalOpen(false);
+    setIsSaving(true);
+    try {
+      await onSaveProduct(newProd);
+      setSelectedCategoryTab(newProd.categoryId);
+      setIsProductModalOpen(false);
+    } catch (error) {
+      setProductError(error instanceof Error ? error.message : "Could not save product.");
+    } finally { setIsSaving(false); }
   };
 
   const displayedProducts = products.filter((p) => {
@@ -191,18 +224,19 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
 
   return (
     <div className="space-y-6 pb-20 md:pb-6 font-poppins">
+      {menuError && <p role="alert" className="text-sm text-red-700 bg-red-50 p-3">{menuError}</p>}
       {/* SECTION 1: CATEGORY MANAGER */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-4 shadow-xs">
+      <div className="dashboard-panel space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-3">
           <div>
             <div className="flex items-center gap-2">
               <Layers className="w-5 h-5 text-red-600" />
               <h2 className="font-bold text-sm text-slate-900">
-                Categories (Juices, Shakes & More)
+                Categories
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Organize your drinks into parent categories like Juices and Shakes.
+              A place for every drink on your menu.
             </p>
           </div>
           <button
@@ -210,21 +244,23 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
             className="pixel-btn-yellow px-3.5 py-2 text-xs flex items-center gap-1.5 cursor-pointer rounded-lg"
           >
             <FolderPlus className="w-4 h-4" />
-            <span>+ New Category</span>
+            <span>New category</span>
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="menu-categories">
           {categories.map((cat) => {
             const count = products.filter((p) => p.categoryId === cat.id).length;
             return (
               <div
                 key={cat.id}
-                className="bg-slate-50/70 border border-slate-200 rounded-xl p-3 flex flex-col justify-between"
+                className="menu-category-card flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-2xl">{cat.icon}</span>
+                    <span className="menu-category-symbol" aria-hidden="true">
+                      {cat.icon === "GlassWater" ? <GlassWater size={21} /> : cat.icon === "Milk" ? <Milk size={21} /> : cat.icon === "Sparkles" ? <Sparkles size={21} /> : cat.icon === "Flame" ? <Flame size={21} /> : <span>{cat.icon.slice(0, 3) || cat.name.slice(0, 1)}</span>}
+                    </span>
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleOpenCategoryModal(cat)}
@@ -234,7 +270,8 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => onDeleteCategory(cat.id)}
+                        disabled={isSaving}
+                        onClick={() => void deleteItem(() => onDeleteCategory(cat.id))}
                         className="p-1 text-slate-400 hover:text-red-600 cursor-pointer"
                         title="Delete Category"
                       >
@@ -261,17 +298,17 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
       </div>
 
       {/* SECTION 2: PRODUCTS & 1:1 IMAGES */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-4 shadow-xs">
+      <div className="dashboard-panel space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-3">
           <div>
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-amber-500" />
               <h2 className="font-bold text-sm text-slate-900">
-                Menu Products, Cloudinary 1:1 Images & Pricing
+                The drink collection
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Add products, upload/link images (1:1 square ratio), and customize size variants in INR (₹).
+              {products.length} drinks across {categories.length} categories. Keep your favourites fresh.
             </p>
           </div>
           <button
@@ -279,7 +316,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
             className="pixel-btn-red px-3.5 py-2 text-xs flex items-center gap-1.5 cursor-pointer rounded-lg"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Add New Drink</span>
+            <span>Add drink</span>
           </button>
         </div>
 
@@ -311,23 +348,23 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
         </div>
 
         {/* Product Cards Grid with 1:1 Images */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="menu-product-grid">
           {displayedProducts.map((prod) => {
             const cat = categories.find((c) => c.id === prod.categoryId);
             return (
               <div
                 key={prod.id}
-                className="bg-white border border-slate-200 rounded-xl p-3 flex flex-col justify-between shadow-xs hover:shadow-md transition-all"
+                className="menu-product-card flex flex-col justify-between transition-all"
               >
                 <div>
                   {/* 1:1 Aspect Ratio Image */}
-                  <div className="w-full aspect-square bg-slate-50 rounded-lg border border-slate-100 overflow-hidden mb-3 relative flex items-center justify-center">
+                  <div className="menu-product-image w-full bg-slate-50 overflow-hidden relative flex items-center justify-center">
                     {prod.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={prod.imageUrl}
                         alt={prod.name}
-                        className="w-full h-full object-cover"
+                        className="absolute inset-0 block w-full h-full object-cover"
                         loading="lazy"
                       />
                     ) : (
@@ -351,7 +388,8 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => onDeleteProduct(prod.id)}
+                        disabled={isSaving}
+                        onClick={() => void deleteItem(() => onDeleteProduct(prod.id))}
                         className="p-1 text-slate-400 hover:text-red-600 cursor-pointer"
                         title="Delete Drink"
                       >
@@ -407,6 +445,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
             </div>
 
             <form onSubmit={handleSaveCategory} className="space-y-3">
+              {menuError && <p role="alert" className="text-xs text-red-700">{menuError}</p>}
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1">
                   Category Name* (e.g. Juices, Shakes)
@@ -471,6 +510,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
                 </button>
                 <button
                   type="submit"
+                  disabled={isSaving}
                   className="pixel-btn-yellow rounded-lg px-5 py-2 text-xs cursor-pointer"
                 >
                   Save Category
@@ -537,40 +577,40 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4 text-red-600" />
-                    <span>Cloudinary Image URL (1:1 Square)</span>
+                    <span>Drink image URL</span>
                   </label>
                   <span className="text-[10px] font-bold bg-yellow-400 text-amber-950 px-2 py-0.5 rounded-full">
-                    Cloudinary Ready
+                    Image preview
                   </span>
                 </div>
 
                 <input
                   type="url"
                   value={prodImageUrl}
-                  onChange={(e) => setProdImageUrl(e.target.value)}
+                  onChange={(e) => { setProdImageUrl(e.target.value); setImageFailed(false); }}
                   placeholder="https://res.cloudinary.com/your-cloud/image/upload/..."
                   className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-red-500"
                 />
                 <p className="text-[11px] text-slate-500">
-                  Image will automatically render in a 1:1 square ratio across the menu and POS.
+                  Use a clear product photo. Images crop to fill the drink card.
                 </p>
 
                 {/* Instant 1:1 Preview */}
                 {prodImageUrl && (
                   <div className="mt-2 flex items-center gap-3 bg-white p-2 rounded-lg border border-slate-200">
-                    <div className="w-16 h-16 aspect-square bg-slate-100 rounded border border-slate-200 overflow-hidden flex-shrink-0">
+                    <div className="relative w-16 h-16 aspect-square bg-slate-100 rounded border border-slate-200 overflow-hidden flex-shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
+                        key={prodImageUrl}
                         src={prodImageUrl}
                         alt="Preview"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = "none";
-                        }}
+                        className="absolute inset-0 block w-full h-full object-cover"
+                        onError={() => setImageFailed(true)}
+                        onLoad={() => setImageFailed(false)}
                       />
                     </div>
                     <span className="text-xs text-emerald-700 font-semibold">
-                      ✓ 1:1 Image preview loaded!
+                      {imageFailed ? "Image could not be loaded. Check the URL." : "Image preview"}
                     </span>
                   </div>
                 )}
@@ -679,9 +719,10 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
                 </button>
                 <button
                   type="submit"
+                  disabled={isSaving}
                   className="pixel-btn-red rounded-lg px-5 py-2 text-xs cursor-pointer"
                 >
-                  Save Product
+                  {isSaving ? "Saving..." : "Save Product"}
                 </button>
               </div>
             </form>
