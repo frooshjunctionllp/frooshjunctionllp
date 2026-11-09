@@ -1,5 +1,6 @@
 "use client";
 
+import { drinkCopy } from "@/lib/drinkCopy";
 import React, { useState, useEffect } from "react";
 import {
   Category,
@@ -13,9 +14,7 @@ import {
   OrderItemCustomization,
 } from "@/types";
 import { storageService } from "@/services/storageService";
-import { JunctionLanding } from "./JunctionLanding";
-import { JunctionHeader } from "./JunctionHeader";
-import { CustomerRegisterModal } from "./CustomerRegisterModal";
+import { StationOrderGuide, StationPlatforms, StationVisitorInfo } from "./StationHomeSections";
 import { RailwaySignboard } from "./RailwaySignboard";
 import { PassengerRailPassModal } from "./PassengerRailPassModal";
 import { DrinkCustomizationModal } from "./DrinkCustomizationModal";
@@ -23,8 +22,11 @@ import { TicketCheckoutModal } from "./TicketCheckoutModal";
 import { LiveOrderTrackerModal } from "./LiveOrderTrackerModal";
 import { OffersAndContestsView } from "./OffersAndContestsView";
 import { CustomerDrinkMonitor } from "./CustomerDrinkMonitor";
+import { CustomerMobileDock } from "./CustomerMobileDock";
 import {
   Train,
+  Ticket,
+  Trophy,
   Sparkles,
   ShoppingBag,
   MapPin,
@@ -33,9 +35,17 @@ import {
   Clock,
   ArrowRight,
   Search,
+  Filter,
   CheckCircle,
+  AlertCircle,
+  Shield,
+  Heart,
+  ChevronRight,
+  Flame,
   Milk,
   GlassWater,
+  Award,
+  Tag,
 } from "lucide-react";
 
 interface CustomerViewProps {
@@ -47,6 +57,7 @@ interface CustomerViewProps {
 export const CustomerView: React.FC<CustomerViewProps> = ({
   categories,
   products,
+  onOpenStaffLogin,
 }) => {
   const [activeTab, setActiveTab] = useState<"home" | "menu" | "monitor" | "offers" | "contact">("home");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -59,14 +70,11 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
   const [activeOrder, setActiveOrder] = useState<OnlineOrder | null>(null);
 
   // Modals
-  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  const [cartNotice, setCartNotice] = useState("");
   const [isPassModalOpen, setIsPassModalOpen] = useState(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [isTrackerModalOpen, setIsTrackerModalOpen] = useState(false);
   const [customizingProduct, setCustomizingProduct] = useState<Product | null>(null);
 
-  useEffect(() => { if (!cartNotice) return; const timer = setTimeout(() => setCartNotice(""), 4500); return () => clearTimeout(timer); }, [cartNotice]);
 
   // Station Clock
   const [stationTime, setStationTime] = useState("");
@@ -147,7 +155,6 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
       customization,
     };
     setCartItems(items => [...items, newItem]);
-    setCartNotice(`${product.name} added to your order`);
   };
 
   const handleOrderPlaced = (order: OnlineOrder) => {
@@ -168,17 +175,373 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
     return matchesCategory && matchesSearch;
   });
 
+  const featuredProducts = products.filter(product => product.isAvailable !== false && product.variants.some(variant => variant.isAvailable !== false)).slice(0, 6);
+
   const cartCount = cartItems.reduce((acc, i) => acc + i.quantity, 0);
 
   return (
-    <div className="client-station min-h-screen flex flex-col">
-      <JunctionHeader activeTab={activeTab} onTab={tab => {setActiveTab(tab);window.scrollTo({top:0});}} currentPass={currentPass} cartCount={cartCount} onAccount={() => currentPass ? setIsPassModalOpen(true) : setIsRegisterOpen(true)} onCart={() => setIsCheckoutModalOpen(true)} time={stationTime}/>
-      {cartNotice && <div className="station-cart-notice" role="status"><CheckCircle size={18}/><span>{cartNotice}</span><button onClick={() => {setCartNotice("");setIsCheckoutModalOpen(true);}}>View order <ArrowRight size={15}/></button></div>}
-      {activeOrder && currentPass?.pnr === activeOrder.pnr && <button className="station-active-order" onClick={() => setIsTrackerModalOpen(true)}><Train size={18}/><span>Your order {activeOrder.id} · {activeOrder.orderStatus === "ready" ? "Ready to collect" : "In progress"}</span><strong>Track order <ArrowRight size={15}/></strong></button>}
+    <div className="min-h-screen bg-[#FAF7EE] text-slate-800 flex flex-col font-sans selection:bg-amber-400 selection:text-slate-950">
+      {/* Top Station Marquee Bar */}
+      <div className="bg-slate-950 text-amber-400 py-1.5 px-3 border-b-2 border-amber-400 text-[11px] font-mono flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="font-bold">PLATFORM COUNTER OPEN</span>
+          <span className="text-slate-400 hidden sm:inline">•</span>
+          <span className="text-amber-200/90 hidden sm:inline">
+            Padma Pukur, Bihar Bus Stand, Entally
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-amber-300 font-black">
+            {stationTime || "16:00:00"} IST
+          </span>
+        </div>
+      </div>
+
+      {/* Main Railway Navigation Bar */}
+      <header className="sticky top-0 z-40 bg-amber-400 border-b-4 border-slate-900 shadow-md">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-2.5 flex items-center justify-between gap-3">
+          {/* Logo & Station Brand */}
+          <div
+            onClick={() => setActiveTab("home")}
+            className="cursor-pointer flex items-center gap-2.5 group"
+          >
+            <img
+              src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
+              alt="Froosh Junction"
+              className="h-10 sm:h-12 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-xs"
+            />
+          </div>
+
+          {/* Navigation Links (Desktop) */}
+          <nav className="hidden md:flex items-center gap-1 font-mono text-xs font-black">
+            <button
+              onClick={() => setActiveTab("home")}
+              className={`px-3 py-1.5 rounded-lg border-2 transition-all cursor-pointer ${
+                activeTab === "home"
+                  ? "bg-slate-950 text-amber-300 border-slate-950 shadow-[2px_2px_0px_#000]"
+                  : "bg-amber-300/60 text-slate-900 border-transparent hover:bg-amber-300"
+              }`}
+            >
+              Fresh Arrivals
+            </button>
+            <button
+              onClick={() => setActiveTab("menu")}
+              className={`px-3 py-1.5 rounded-lg border-2 transition-all cursor-pointer ${
+                activeTab === "menu"
+                  ? "bg-slate-950 text-amber-300 border-slate-950 shadow-[2px_2px_0px_#000]"
+                  : "bg-amber-300/60 text-slate-900 border-transparent hover:bg-amber-300"
+              }`}
+            >
+              Platform Menu
+            </button>
+            <button
+              onClick={() => setActiveTab("monitor")}
+              className={`px-3 py-1.5 rounded-lg border-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTab === "monitor"
+                  ? "bg-slate-950 text-amber-300 border-slate-950 shadow-[2px_2px_0px_#000]"
+                  : "bg-amber-300/60 text-slate-900 border-transparent hover:bg-amber-300"
+              }`}
+            >
+              <Flame className="w-3.5 h-3.5 text-red-600" />
+              <span>My Drinks Tracker</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("offers")}
+              className={`px-3 py-1.5 rounded-lg border-2 transition-all cursor-pointer flex items-center gap-1 ${
+                activeTab === "offers"
+                  ? "bg-slate-950 text-amber-300 border-slate-950 shadow-[2px_2px_0px_#000]"
+                  : "bg-amber-300/60 text-slate-900 border-transparent hover:bg-amber-300"
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5 text-amber-600" />
+              <span>Contests & Deals</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("contact")}
+              className={`px-3 py-1.5 rounded-lg border-2 transition-all cursor-pointer ${
+                activeTab === "contact"
+                  ? "bg-slate-950 text-amber-300 border-slate-950 shadow-[2px_2px_0px_#000]"
+                  : "bg-amber-300/60 text-slate-900 border-transparent hover:bg-amber-300"
+              }`}
+            >
+              Station Info
+            </button>
+          </nav>
+
+          {/* Right Action Buttons */}
+          <div className="flex items-center gap-2">
+            {/* Passenger Rail Pass / Register Button */}
+            {currentPass ? (
+              <button
+                onClick={() => setIsPassModalOpen(true)}
+                className="bg-slate-950 hover:bg-slate-900 text-amber-300 border-2 border-slate-950 px-2.5 sm:px-3 py-1.5 rounded-lg font-mono text-xs font-bold shadow-[2px_2px_0px_#000] flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Ticket className="w-3.5 h-3.5" />
+                <span className="truncate max-w-24 sm:max-w-none">
+                  {currentPass.name.split(" ")[0]} ({currentPass.pnr})
+                </span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5 font-mono">
+                <a
+                  href="/register"
+                  className="bg-slate-950 hover:bg-slate-900 text-amber-300 border-2 border-slate-950 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold shadow-[2px_2px_0px_#000] flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Ticket className="w-3.5 h-3.5" />
+                  <span>Register</span>
+                </a>
+                <a
+                  href="/login"
+                  className="bg-amber-300/80 hover:bg-amber-300 text-slate-950 border-2 border-slate-950 px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold shadow-[2px_2px_0px_#000] transition-all cursor-pointer"
+                >
+                  Sign In
+                </a>
+              </div>
+            )}
+
+            {/* Cart / Ticket Button */}
+            <button
+              onClick={() => setIsCheckoutModalOpen(true)}
+              className="relative bg-red-600 hover:bg-red-700 text-white border-2 border-slate-950 px-3 py-1.5 rounded-lg font-mono text-xs font-black shadow-[2px_2px_0px_#000] flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Ticket</span>
+              {cartCount > 0 && (
+                <span className="bg-amber-400 text-slate-950 text-[10px] font-black px-1.5 py-0.2 rounded-full font-mono">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation Bar */}
+        <div className="md:hidden flex border-t-2 border-slate-900 font-mono text-[11px] font-bold">
+          <button
+            onClick={() => setActiveTab("home")}
+            className={`flex-1 py-1.5 text-center ${
+              activeTab === "home"
+                ? "bg-slate-950 text-amber-300"
+                : "bg-amber-400 text-slate-900"
+            }`}
+          >
+            Arrivals
+          </button>
+          <button
+            onClick={() => setActiveTab("menu")}
+            className={`flex-1 py-1.5 text-center border-l border-slate-900 ${
+              activeTab === "menu"
+                ? "bg-slate-950 text-amber-300"
+                : "bg-amber-400 text-slate-900"
+            }`}
+          >
+            Menu
+          </button>
+          <button
+            onClick={() => setActiveTab("monitor")}
+            className={`flex-1 py-1.5 text-center border-l border-slate-900 flex items-center justify-center gap-0.5 ${
+              activeTab === "monitor"
+                ? "bg-slate-950 text-amber-300"
+                : "bg-amber-400 text-slate-900"
+            }`}
+          >
+            <Flame className="w-3 h-3 text-red-600" />
+            <span>My Drinks</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("offers")}
+            className={`flex-1 py-1.5 text-center border-l border-slate-900 ${
+              activeTab === "offers"
+                ? "bg-slate-950 text-amber-300"
+                : "bg-amber-400 text-slate-900"
+            }`}
+          >
+            Contests
+          </button>
+          <button
+            onClick={() => setActiveTab("contact")}
+            className={`flex-1 py-1.5 text-center border-l border-slate-900 ${
+              activeTab === "contact"
+                ? "bg-slate-950 text-amber-300"
+                : "bg-amber-400 text-slate-900"
+            }`}
+          >
+            Station
+          </button>
+        </div>
+      </header>
+
       {/* Main Body */}
-      <main className={`station-main flex-1 ${activeTab !== "home" ? "station-inner-screen" : ""}`}>
+      <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-6 space-y-8">
         {/* ================= TAB 1: HOME (FRESH ARRIVALS) ================= */}
-        {activeTab === "home" && <JunctionLanding products={products} onMenu={() => {setActiveTab("menu");window.scrollTo({top:0});}} onChoose={setCustomizingProduct} onVisit={() => {setActiveTab("contact");window.scrollTo({top:0});}} />}
+        {activeTab === "home" && (
+          <div className="space-y-8 max-w-[1440px] mx-auto">
+            {/* Authentic Railway Signboard */}
+            <RailwaySignboard
+              title="FROOSH JUNCTION"
+              bengaliTitle="ফ্রুশ জংশন"
+              stationCode="FRSH / 700014"
+              platform="PLATFORM 1 & 2"
+            />
+
+            {/* Hero Banner */}
+            <div className="border-4 border-slate-900 bg-slate-950 text-amber-300 rounded-2xl p-6 sm:p-8 shadow-[6px_6px_0px_#f59e0b] relative overflow-hidden">
+              <div className="relative z-10 max-w-2xl space-y-4">
+                <span className="inline-block bg-amber-400 text-slate-950 font-mono text-xs font-black uppercase px-2.5 py-1 rounded">
+                  ENTALLY, KOLKATA • JUICES & SHAKES
+                </span>
+                <h1 className="text-3xl sm:text-5xl font-black font-mono text-white tracking-tight leading-tight">
+                  <span className="text-amber-400 underline decoration-red-500">
+                    Your Next Fresh Stop.
+                  </span>
+                </h1>
+                <p className="text-sm sm:text-base text-slate-300 font-sans leading-relaxed">
+                  Take a refreshing break with your favourite juices and shakes,
+                  served with the spirit of an Indian railway junction.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-4 pt-2 font-mono">
+                  <button onClick={() => setActiveTab("menu")} className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-5 py-3 rounded-xl border-2 border-slate-950 shadow-[3px_3px_0px_#fff] hover:shadow-none transition-all uppercase text-xs sm:text-sm flex items-center gap-2 cursor-pointer"><span>View menu & order</span><ArrowRight className="w-4 h-4" /></button>
+                  <a href="#station-order-guide" className="font-bold text-xs text-amber-200 hover:text-white underline underline-offset-4 inline-flex items-center gap-1.5 py-2">How to order <ChevronRight className="w-4 h-4" /></a>
+                </div>
+                <p className="text-[11px] text-slate-400 pt-1">Browse first. Enter your name and phone at checkout.</p>
+              </div>
+
+              {/* Decorative Railway Tracks Overlay */}
+              <div className="absolute -bottom-8 -right-8 w-64 h-64 border-8 border-dashed border-amber-400/20 rounded-full pointer-events-none" />
+            </div>
+
+            <StationOrderGuide />
+            <StationPlatforms categories={categories} products={products} onMenu={(categoryId) => { setSelectedCategory(categoryId || "all"); setSearchQuery(""); setActiveTab("menu"); window.scrollTo({ top: 0 }); }} />
+
+            {/* Live Order Tracker Banner (If customer has an active order) */}
+            {activeOrder && currentPass?.pnr === activeOrder.pnr && !["completed", "cancelled"].includes(activeOrder.orderStatus) && (
+              <div className="border-3 border-slate-900 bg-amber-200/90 rounded-xl p-4 flex items-center justify-between shadow-[3px_3px_0px_#0f172a]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-slate-900 text-amber-400 flex items-center justify-center shrink-0">
+                    <Train className="w-5 h-5 animate-bounce" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono font-black text-slate-600 uppercase block">
+                      LIVE PLATFORM STATUS • TICKET #{activeOrder.id}
+                    </span>
+                    <div className="text-sm font-black text-slate-950 uppercase font-mono">
+                      Status: {activeOrder.orderStatus} • {activeOrder.items.length}{" "}
+                      Drinks
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsTrackerModalOpen(true)}
+                  className="bg-slate-900 hover:bg-slate-800 text-amber-300 font-mono font-bold text-xs px-3 py-2 rounded-lg transition-colors cursor-pointer"
+                >
+                  View Status
+                </button>
+              </div>
+            )}
+
+            {/* Featured Platforms (Menu Highlights) */}
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-slate-900 pb-3">
+                <div>
+                  <h3 className="font-mono text-lg font-black uppercase text-slate-950">
+                    Now arriving · Juices & shakes
+                  </h3>
+                  <p className="text-xs text-slate-600">
+                    Pick a drink below, or explore the full menu.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTab("menu")}
+                  className="text-xs font-mono font-bold text-red-600 hover:underline flex items-center gap-1"
+                >
+                  <span>See Full Menu</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                {featuredProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="border-3 border-slate-900 bg-white rounded-xl overflow-hidden shadow-[3px_3px_0px_#0f172a] hover:translate-y-[-2px] transition-transform flex flex-col justify-between"
+                  >
+                    <div>
+                      {product.imageUrl && (
+                        <div className="h-44 w-full relative bg-amber-100 overflow-hidden">
+                          <img
+                            src={product.imageUrl}
+                            alt={drinkCopy(product.name)}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-2 left-2 bg-slate-950 text-amber-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded flex items-center gap-1.5 shadow-sm">
+                            {product.categoryId === "cat-shakes" ? (
+                              <>
+                                <Milk className="w-3 h-3 text-red-400" />
+                                <span>Shake</span>
+                              </>
+                            ) : product.categoryId === "cat-juices" ? (
+                              <>
+                                <GlassWater className="w-3 h-3 text-amber-400" />
+                                <span>Juice</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3 h-3 text-pink-400" />
+                                <span>Station Special</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      <div className="p-3.5 space-y-1">
+                        <h4 className="font-mono text-sm font-black text-slate-950">
+                          {drinkCopy(product.name)}
+                        </h4>
+                        <p className="text-xs text-slate-600 line-clamp-2">
+                          {drinkCopy(product.description)}
+                        </p>
+
+                        {/* Portion sizes */}
+                        <div className="flex flex-wrap gap-1 pt-1">
+                          {product.variants.map((v) => (
+                            <span
+                              key={v.id}
+                              className="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200"
+                            >
+                              {v.name.split(" ")[0]}: ₹{v.price}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
+                      <div>
+                        <span className="text-[10px] text-slate-500 font-mono block">
+                          Starts from
+                        </span>
+                        <span className="text-sm font-black text-red-600 font-mono">
+                          ₹{product.variants[0]?.price || 90}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setCustomizingProduct(product)}
+                        className="bg-amber-400 hover:bg-amber-500 text-slate-950 border border-slate-950 font-mono text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Customize & Add
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <StationVisitorInfo onVisit={() => { setActiveTab("contact"); window.scrollTo({top:0}); }} onOffers={() => { setActiveTab("offers"); window.scrollTo({top:0}); }} />
+          </div>
+        )}
+
         {/* ================= TAB 2: PLATFORM MENU ================= */}
         {activeTab === "menu" && (
           <div className="space-y-5">
@@ -186,10 +549,10 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
             <div className="border-3 border-slate-900 bg-amber-400 p-4 rounded-xl shadow-[3px_3px_0px_#0f172a] flex flex-wrap items-center justify-between gap-3">
               <div>
                 <span className="text-[10px] uppercase font-mono font-bold text-slate-800">
-                  THE PLATFORM MENU
+                  DIGITAL DESTINATION MENU
                 </span>
                 <h2 className="text-xl sm:text-2xl font-black font-mono text-slate-950 uppercase">
-                  Find your next favourite
+                  Station Beverage Ledger
                 </h2>
               </div>
 
@@ -218,7 +581,7 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
               >
                 All Platforms ({products.length})
               </button>
-              {categories.map((cat, idx) => (
+              {categories.filter(category => products.some(product => product.categoryId === category.id && product.isAvailable !== false)).map((cat, idx) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
@@ -245,19 +608,19 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
                       <div className="h-44 w-full relative bg-amber-100 overflow-hidden">
                         <img
                           src={product.imageUrl}
-                          alt={product.name}
+                          alt={drinkCopy(product.name)}
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-2 left-2 bg-slate-950 text-amber-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded flex items-center gap-1.5 shadow-sm">
                           {product.categoryId === "cat-shakes" ? (
                             <>
                               <Milk className="w-3 h-3 text-red-400" />
-                              <span>Gourmet Shake</span>
+                              <span>Shake</span>
                             </>
                           ) : product.categoryId === "cat-juices" ? (
                             <>
                               <GlassWater className="w-3 h-3 text-amber-400" />
-                              <span>Pure Juice</span>
+                              <span>Juice</span>
                             </>
                           ) : (
                             <>
@@ -270,10 +633,10 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
                     )}
                     <div className="p-3.5 space-y-1">
                       <h4 className="font-mono text-sm font-black text-slate-950">
-                        {product.name}
+                        {drinkCopy(product.name)}
                       </h4>
                       <p className="text-xs text-slate-600 line-clamp-2">
-                        {product.description}
+                        {drinkCopy(product.description)}
                       </p>
 
                       {/* Portion sizes */}
@@ -317,7 +680,7 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
           <CustomerDrinkMonitor
             currentPass={currentPass}
             orders={onlineOrders.filter(order => order.pnr === currentPass?.pnr)}
-            onOpenRegister={() => setIsRegisterOpen(true)}
+            onOpenRegister={() => setIsPassModalOpen(true)}
             onExploreMenu={() => setActiveTab("menu")}
           />
         )}
@@ -327,7 +690,7 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
           <OffersAndContestsView
             offers={offers}
             currentPass={currentPass}
-            onOpenPassModal={() => currentPass ? setIsPassModalOpen(true) : setIsRegisterOpen(true)}
+            onOpenPassModal={() => setIsPassModalOpen(true)}
             onExploreMenu={() => setActiveTab("menu")}
           />
         )}
@@ -410,8 +773,7 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
                   Froosh Junction was born out of love for the bustling,
                   energizing hubs of Indian railway junctions. Just like a station
                   unites passengers from every route, our platform serves
-                  refreshing stops of 100% pure fruit juices and velvety thick
-                  milkshakes to travelers and locals alike.
+                  refreshing stops of juices and shakes to travelers and locals alike.
                 </p>
 
                 <div className="bg-slate-950 text-amber-300 rounded-xl p-3 text-xs font-mono space-y-1">
@@ -428,9 +790,31 @@ export const CustomerView: React.FC<CustomerViewProps> = ({
         )}
       </main>
 
-      <footer className="station-footer"><div><img src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png" alt="Froosh Junction" /><p>Fresh stops. Familiar faces.</p></div><div><span className="station-label">FIND THE JUNCTION</span><p>Padma Pukur, Bihar Bus Stand<br/>Entally, Kolkata · 700014</p><a href="tel:+918013726751">+91 8013726751</a></div><div><span className="station-label">STAY A LITTLE LONGER</span><button onClick={() => setActiveTab("menu")}>Explore the menu</button><a href="https://instagram.com/frooshjunction" target="_blank" rel="noreferrer">Instagram</a><div className="station-team-links"><a href="/staff">Staff sign in</a><a href="/admin">Admin</a></div></div></footer>
-      {cartCount > 0 && <button className="station-mobile-order" onClick={() => setIsCheckoutModalOpen(true)}><ShoppingBag size={18}/><span>{cartCount} {cartCount === 1 ? "drink" : "drinks"} in your order</span><strong>View order <ArrowRight size={16}/></strong></button>}
-      <CustomerRegisterModal isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} currentPass={currentPass} onPassUpdated={pass => {setCurrentPass(pass);refreshCustomerState();}} onRedirectToMenu={() => setActiveTab("menu")} />
+      {/* Footer */}
+      <footer className="border-t-4 border-slate-900 bg-slate-950 text-amber-400 py-6 mt-12 mb-20 sm:mb-0 text-center font-mono text-xs">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <Train className="w-4 h-4 text-amber-400" />
+            <span className="font-black tracking-widest uppercase">
+              Froosh Junction • Entally, Kolkata – 700014
+            </span>
+          </div>
+          <p className="text-slate-400 text-[11px] font-sans">
+            Phone: +91 8013726751 • Instagram: @frooshjunction • Station Code: FRSH
+          </p>
+        </div>
+      </footer>
+
+      {/* Floating Mobile Dock */}
+      <CustomerMobileDock
+        activeTab={activeTab}
+        onSelectTab={(tab) => setActiveTab(tab)}
+        cartCount={cartCount}
+        onOpenCart={() => setIsCheckoutModalOpen(true)}
+        currentPass={currentPass}
+        onOpenProfile={() => setIsPassModalOpen(true)}
+      />
+
       {/* Modals */}
       <PassengerRailPassModal
         isOpen={isPassModalOpen}

@@ -495,7 +495,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
                   rows={2}
                   value={catDescription}
                   onChange={(e) => setCatDescription(e.target.value)}
-                  placeholder="Thick gourmet milkshakes & dessert blends..."
+                  placeholder="Juices and shakes..."
                   className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-red-500"
                 />
               </div>

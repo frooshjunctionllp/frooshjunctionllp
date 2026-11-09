@@ -1,5 +1,6 @@
 "use client";
 
+import { drinkCopy } from "@/lib/drinkCopy";
 import React, { useState } from "react";
 import { Product, ProductVariant, OrderItemCustomization } from "@/types";
 import { X, Plus, Minus, Check, Sparkles } from "lucide-react";
@@ -86,7 +87,7 @@ export const DrinkCustomizationModal: React.FC<DrinkCustomizationModalProps> = (
               DRINK CUSTOMIZER
             </span>
             <h3 className="font-mono text-base font-black tracking-wide text-white mt-1">
-              {product.name}
+              {drinkCopy(product.name)}
             </h3>
           </div>
           <button

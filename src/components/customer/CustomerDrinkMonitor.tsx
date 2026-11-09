@@ -253,14 +253,14 @@ export const CustomerDrinkMonitor: React.FC<CustomerDrinkMonitorProps> = ({
         {/* Gourmet Shakes */}
         <div className="border-3 border-slate-900 bg-red-50 rounded-xl p-4 shadow-[3px_3px_0px_#0f172a] space-y-1">
           <div className="flex items-center justify-between text-red-800 text-xs">
-            <span className="font-bold uppercase tracking-wider text-[10px]">Thick Shakes</span>
+            <span className="font-bold uppercase tracking-wider text-[10px]">Shakes</span>
             <Milk className="w-4 h-4 text-red-600" />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-red-600">
             {drinkSummary.shakeCount}
           </div>
           <p className="text-[10px] text-red-900/80 font-sans">
-            Gourmet dessert thickshakes
+            Your shake favourites
           </p>
         </div>
 

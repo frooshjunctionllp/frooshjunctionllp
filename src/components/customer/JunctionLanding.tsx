@@ -1,7 +1,7 @@
 "use client";
+import { drinkCopy } from "@/lib/drinkCopy";
 
 import { ArrowRight, ArrowUpRight, GlassWater, MapPin, Milk, TrainFront, Ticket, Check } from "lucide-react";
-import Image from "next/image";
 import type { Product } from "@/types";
 
 interface Props {
@@ -16,24 +16,27 @@ export function JunctionLanding({ products, onMenu, onChoose, onVisit }: Props) 
   const featured = [...available.filter((product) => product.categoryId === "cat-juices").slice(0, 2), ...available.filter((product) => product.categoryId === "cat-shakes").slice(0, 2)];
   const picks = featured.length ? featured : available.slice(0, 4);
   return <>
-    <section className="junction-hero express-junction-hero" aria-labelledby="junction-title">
+    <section className="junction-hero" aria-labelledby="junction-title">
       <div className="junction-hero-copy">
-        <div className="station-label"><span className="station-signal" /> THE REFRESHMENT PLATFORM</div>
-        <h1 id="junction-title">Next stop.<br /><em>Fresh.</em></h1>
-        <p>Fresh juices. Thick shakes.<br />A delicious detour from the everyday.</p>
-        <div className="express-hero-actions"><button className="station-button station-button-primary" onClick={onMenu}>Find your favourite <ArrowRight size={19} /></button><span><Check size={14} /> No sign-up to browse</span></div>
-        <div className="express-station-coordinate"><MapPin size={15} /><span>ENTALLY, KOLKATA</span><span>FRSH / 700014</span></div>
+        <div className="station-label"><span className="station-signal" /> YOUR FRESH STOP · ENTALLY, KOLKATA</div>
+        <h1 id="junction-title">Good things<br />come to a <em>stop.</em></h1>
+        <p>Fresh fruit juices. Juices and shakes.<br />A little pause in your everyday journey.</p>
+        <div className="junction-hero-actions"><button className="station-button station-button-primary" onClick={onMenu}>Explore the menu <ArrowRight size={18} /></button><a href="#how-title" className="station-text-button">How to order <ArrowUpRight size={16} /></a></div>
+        <span className="junction-no-signup"><Check size={14} /> Browse first. Add your details at checkout.</span>
+        <div className="junction-location"><MapPin size={17} /><span>Padma Pukur, Entally<small>Your neighbourhood refreshment junction.</small></span></div>
       </div>
-      <div className="express-hero-art">
-        <div className="express-destination"><TrainFront size={18} /><span>NOW ARRIVING<strong>Froosh Junction</strong></span><ArrowUpRight size={20} /></div>
-        <div className="express-hero-photograph">
-          <Image src="/images/junction-hero.png" width={1536} height={1024} sizes="(max-width: 700px) 100vw, 55vw" alt="Mango juice and a chocolate shake at a vintage green railway carriage café" preload />
+      <div className="junction-hero-scene">
+        <div className="junction-station-sign"><span lang="bn">ফ্রুশ জংশন</span><strong>FROOSH JUNCTION</strong><small>ENTALLY · KOLKATA · FRSH</small></div>
+        <div className="junction-photo-frame">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=400&q=80" width={400} height={400} alt="Fresh mango drink with fruit at the Froosh refreshment stop" fetchPriority="high" />
+          <span className="junction-photo-caption"><GlassWater size={15} /> A refreshing change of pace.</span>
         </div>
-        <div className="express-fresh-stamp"><span>TAKE A LITTLE</span><GlassWater size={27} strokeWidth={1.3}/><strong>FRESH BREAK</strong></div>
-        <div className="express-photo-label"><span>THE JUICE LINE</span><i /><span>THE SHAKE LINE</span></div>
+        <div className="junction-ticket"><span className="junction-ticket-icon"><TrainFront size={24} /></span><div><small>YOUR NEXT FRESH STOP</small><strong>Something delicious.</strong><span>Fresh juices. Shakes. Good company.</span></div><b>01</b></div>
+        <span className="junction-scene-code">FJ / REFRESHMENT COACH</span>
       </div>
     </section>
-    <div className="junction-route-strip" aria-label="Our drink selection"><span><GlassWater size={17} /> Fresh juices</span><i /><span><Milk size={17} /> Thick shakes</span><i /><span><TrainFront size={17} /> One happy junction</span></div>
+    <div className="junction-route-strip" aria-label="Our drink selection"><span><GlassWater size={17} /> Fresh juices</span><i /><span><Milk size={17} /> Shakes</span><i /><span><TrainFront size={17} /> One happy junction</span></div>
 
     <section className="junction-how" aria-labelledby="how-title">
       <div className="junction-section-heading"><div><span className="station-label">FIRST TIME AT THE JUNCTION?</span><h2 id="how-title">Three stops. One good sip.</h2></div><p>No railway timetable needed.<br />Here&apos;s how to order.</p></div>
@@ -47,8 +50,8 @@ export function JunctionLanding({ products, onMenu, onChoose, onVisit }: Props) 
     <section className="junction-featured" aria-labelledby="featured-title">
       <div className="junction-section-heading"><div><span className="station-label">NOW ARRIVING</span><h2 id="featured-title">Pick your platform.</h2></div><button className="station-text-button" onClick={onMenu}>See the full menu <ArrowUpRight size={18} /></button></div>
       <div className="junction-drink-grid">{picks.map((product, index) => <button className="junction-drink" key={product.id} onClick={() => onChoose(product)}>
-        <div className="junction-drink-photo">{product.imageUrl ? <img src={product.imageUrl} alt={product.name} loading="lazy" /> : <GlassWater size={44} />}<span>PLATFORM {String(index + 1).padStart(2, "0")}</span></div>
-        <div className="junction-drink-info"><span>{product.categoryId === "cat-shakes" ? "THE SHAKE LINE" : "THE FRESH LINE"}</span><h3>{product.name}</h3><div><strong>From ₹{Math.min(...product.variants.filter((variant) => variant.isAvailable !== false).map((variant) => variant.price))}</strong><span className="junction-drink-arrow"><ArrowUpRight size={19} /></span></div></div>
+        <div className="junction-drink-photo">{product.imageUrl ? <img src={product.imageUrl} alt={drinkCopy(product.name)} loading="lazy" /> : <GlassWater size={44} />}<span>PLATFORM {String(index + 1).padStart(2, "0")}</span></div>
+        <div className="junction-drink-info"><span>{product.categoryId === "cat-shakes" ? "THE SHAKE LINE" : "THE FRESH LINE"}</span><h3>{drinkCopy(product.name)}</h3><div><strong>From ₹{Math.min(...product.variants.filter((variant) => variant.isAvailable !== false).map((variant) => variant.price))}</strong><span className="junction-drink-arrow"><ArrowUpRight size={19} /></span></div></div>
       </button>)}</div>
       {picks.length === 0 && <p className="junction-menu-empty">The menu is being refreshed. Please check back shortly.</p>}
     </section>

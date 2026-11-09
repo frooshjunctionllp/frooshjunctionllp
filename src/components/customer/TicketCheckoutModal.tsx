@@ -1,5 +1,6 @@
 "use client";
 
+import { drinkCopy } from "@/lib/drinkCopy";
 import React, { useState } from "react";
 import {
   CustomerPass,
@@ -185,7 +186,7 @@ export const TicketCheckoutModal: React.FC<TicketCheckoutModalProps> = ({
                   >
                     <div className="space-y-0.5">
                       <div className="text-xs font-black text-slate-900">
-                        {item.productName}
+                        {drinkCopy(item.productName)}
                       </div>
                       <div className="text-[11px] text-slate-600 font-medium">
                         {item.variantName}

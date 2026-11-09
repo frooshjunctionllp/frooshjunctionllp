@@ -1,5 +1,6 @@
 "use client";
 
+import { drinkCopy } from "@/lib/drinkCopy";
 import React, { useRef } from "react";
 import { Sale } from "@/types";
 import { Printer, X, CheckCircle, Share2, Phone } from "lucide-react";
@@ -60,7 +61,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
               />
             </div>
             <p className="text-xs text-slate-600 mt-0.5 font-semibold">
-              Fresh Juices • Thick Shakes • Fruit Bowls
+              Juices • Shakes
             </p>
             <p className="text-[11px] text-slate-400 mt-0.5">
               Station Road, Beverage Corner • Mob: 98765-FROOSH
@@ -142,7 +143,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
                   <div className="col-span-6 pr-1">
                     <div className="flex items-center gap-1 flex-wrap">
                       <p className="font-semibold text-slate-800 leading-tight">
-                        {item.productName}
+                        {drinkCopy(item.productName)}
                       </p>
                       {item.isComplementary && (
                         <span className="text-[9px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1 py-0.2 rounded">

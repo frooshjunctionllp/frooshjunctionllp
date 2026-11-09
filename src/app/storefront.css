@@ -20,16 +20,21 @@
 .station-signal { background:#c95532; height:7px; width:7px; border-radius:50%; }
 .junction-hero { max-width:1360px; margin:auto; display:grid; grid-template-columns:1.05fr 1fr; min-height:565px; padding:44px 5vw 42px; gap:36px; align-items:center; }
 .junction-hero-copy { padding:12px 0; }
-.junction-hero h1 { font-size:clamp(48px,5.5vw,82px); font-weight:700; letter-spacing:-4px; line-height:1.06; margin:24px 0 23px; }
+.junction-hero h1 { font-size:clamp(48px,5.2vw,74px); font-weight:700; letter-spacing:-3px; line-height:1.08; margin:23px 0; }
 .junction-hero h1 em { color:#c95532; font-style:normal; }
 .junction-hero-copy > p { font-size:14px; line-height:1.9; color:#647064; margin-bottom:26px; }
 .station-button { display:inline-flex; align-items:center; justify-content:center; gap:20px; min-height:48px; padding:14px 23px; border-radius:4px; font-size:12px; font-weight:500; }
 .station-button-primary { background:#c95532; color:#fff9ec; }
 .station-button-primary:hover { background:#aa4327; transform:translateY(-2px); }
 .junction-no-signup { display:flex; align-items:center; gap:7px; color:#717a6b; font-size:10px; margin-top:12px; }
+.junction-hero-actions { display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+.junction-hero-actions .station-button { min-height:50px; }
+.junction-hero-actions .station-text-button { color:#53634b; font-size:11px; }
+.junction-hero-actions .station-text-button:hover { color:#c95532; }
+#how-title { scroll-margin-top:140px; }
 .junction-location { display:flex; gap:11px; align-items:center; margin-top:28px; padding-top:22px; border-top:1px solid #d8dccb; max-width:330px; font-size:11px; }
 .junction-location small { display:block; margin-top:4px; color:#777e6e; font-size:10px; }
-.junction-hero-scene { background:#344f43; border-radius:130px 130px 5px 5px; padding:24px 32px 21px; position:relative; isolation:isolate; border:1px solid #233d35; }
+.junction-hero-scene { background:#344f43; border-radius:130px 130px 5px 5px; padding:24px 32px 21px; position:relative; isolation:isolate; border:1px solid #233d35; box-shadow:inset 0 0 0 7px #ffffff05,0 12px 30px #233d350c; }
 .junction-hero-scene::before { content:""; position:absolute; left:-7px; right:-7px; bottom:51px; height:14px; border-top:4px solid #e7bb6f; border-bottom:4px solid #e7bb6f; z-index:-1; }
 .junction-station-sign { width:fit-content; text-align:center; margin:0 auto 20px; background:#ead08e; padding:11px 24px; border:4px double #3e4930; color:#263e32; border-radius:3px; box-shadow:0 4px 0 #1f362d; }
 .junction-station-sign > span { font-size:12px; display:block; }
@@ -38,7 +43,7 @@
 .junction-photo-frame { margin:auto; height:237px; max-width:350px; border:7px solid #e5dbc2; border-radius:85px 85px 8px 8px; overflow:hidden; position:relative; background:#e5dbc2; box-shadow:0 0 0 1px #1e352c,0 7px 0 #1e352c; }
 .junction-photo-frame img { width:100%; height:100%; object-fit:cover; object-position:center 53%; }
 .junction-photo-caption { position:absolute; bottom:12px; left:12px; right:12px; display:flex; align-items:center; justify-content:center; gap:7px; background:#f7f3e8ee; color:#263e32; padding:9px; border-radius:3px; font-size:10px; }
-.junction-ticket { position:relative; display:flex; align-items:center; gap:13px; background:#f7f0de; padding:17px; margin:22px -10px 9px; border:1px solid #d1c8a9; border-radius:4px; box-shadow:0 4px 0 #19332844; transform:rotate(-3deg); }
+.junction-ticket { position:relative; display:flex; align-items:center; gap:13px; background:#f7f0de; padding:17px; margin:22px -10px 9px; border:1px solid #d1c8a9; border-radius:4px; box-shadow:0 4px 0 #19332844; transform:rotate(-1.5deg); }
 .junction-ticket-icon { padding-right:12px; border-right:1px dashed #9da78d; }
 .junction-ticket small { display:block; font:8px/1.6 monospace; letter-spacing:1.3px; color:#78826b; }
 .junction-ticket strong { display:block; font-size:16px; font-weight:600; letter-spacing:-.4px; margin:3px 0; }
@@ -110,7 +115,8 @@
   .station-announcement { font-size:8px; letter-spacing:.5px; padding:8px 16px; } .station-announcement-time { display:none; }
   .station-header { flex-wrap:wrap; padding:8px 18px 0; gap:0; } .station-logo img { width:103px; height:53px; } .station-header-actions { margin-left:auto; gap:14px; } .station-account span { display:inline; font-size:10px; } .station-cart { padding:10px; } .station-cart > span { display:none; }
   .station-navigation { order:3; width:100%; justify-content:space-between; gap:12px; border-top:1px solid #e2e1d3; margin-top:7px; } .station-navigation button { font-size:11px; padding:12px 2px 10px; }
-  .junction-hero { grid-template-columns:1fr; gap:26px; padding:30px 22px 26px; } .junction-hero-copy { padding:0; } .junction-hero h1 { font-size:clamp(47px,10.6vw,68px); letter-spacing:-2.7px; margin:18px 0; } .junction-hero-copy > p { font-size:13px; margin-bottom:20px; } .junction-no-signup { font-size:9px; } .junction-location { display:none; }
+  .junction-hero { grid-template-columns:1fr; gap:26px; padding:30px 22px 26px; } .junction-hero-copy { padding:0; } .junction-hero h1 { font-size:clamp(37px,10.6vw,64px); letter-spacing:-1.9px; margin:18px 0; } .junction-hero-copy > p { font-size:13px; margin-bottom:20px; } .junction-no-signup { font-size:9px; } .junction-location { display:none; }
+  .junction-hero-actions { gap:16px; } .junction-hero-actions .station-button { padding:13px 18px; font-size:11px; }
   .junction-hero-scene { width:min(100%,420px); margin:auto; padding:20px 25px 17px; border-radius:110px 110px 5px 5px; } .junction-photo-frame { height:216px; } .junction-station-sign { margin-bottom:17px; } .junction-ticket { margin-top:18px; padding:15px; } .junction-ticket strong { font-size:15px; } .junction-ticket b { font-size:30px; }
   .junction-route-strip { gap:13px; padding:16px 12px; } .junction-route-strip span { gap:5px; font-size:9px; } .junction-route-strip svg { width:14px; } .junction-route-strip i { width:3px; height:3px; }
   .junction-how, .junction-featured, .junction-visit { padding:38px 22px; } .junction-section-heading { display:block; margin-bottom:24px; } .junction-section-heading h2,.junction-visit h2 { font-size:29px; letter-spacing:-1px; } .junction-section-heading > p { margin-top:12px; } .junction-section-heading > .station-text-button { margin-top:10px; }
@@ -121,44 +127,3 @@
   .station-mobile-order { position:fixed; bottom:12px; left:14px; right:14px; z-index:40; display:flex; align-items:center; gap:10px; padding:16px; border-radius:5px; background:#233d35; color:#fff6df; box-shadow:0 4px 20px #233d3525; font-size:11px; } .station-mobile-order strong { display:flex; align-items:center; gap:7px; margin-left:auto; color:#f1ce8a; font-weight:500; }
 }
 @media(prefers-reduced-motion:reduce) { .client-station *, .client-station *::before { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
-
-/* Hero v2: a railway café campaign, with a single strong photographic scene. */
-.express-junction-hero { grid-template-columns:.9fr 1.1fr; gap:12px; max-width:1440px; padding:42px 5vw 45px; min-height:580px; overflow:hidden; }
-.express-junction-hero .junction-hero-copy { position:relative; z-index:2; padding:5px 0 0; }
-.express-junction-hero h1 { font-size:clamp(65px,8.5vw,124px); line-height:.96; font-weight:700; letter-spacing:-6px; margin:35px -45px 26px 0; }
-.express-junction-hero h1 em { display:inline-block; position:relative; }
-.express-junction-hero h1 em::after { content:""; display:block; height:7px; border-top:2px solid #c95532; border-bottom:1px solid #c95532; width:95%; transform:rotate(-3deg); margin-top:12px; }
-.express-junction-hero .junction-hero-copy > p { font-size:12px; line-height:1.9; max-width:43ch; margin-bottom:25px; }
-.express-hero-actions { display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
-.express-hero-actions > span { display:flex; align-items:center; gap:6px; color:#69765e; font-size:10px; }
-.express-hero-actions .station-button { padding:15px 23px; min-height:50px; border-radius:2px; }
-.express-station-coordinate { display:flex; align-items:center; gap:8px; max-width:360px; border-top:1px solid #cbd1bb; padding-top:19px; margin-top:27px; font:9px/1.5 monospace; letter-spacing:1px; }
-.express-station-coordinate > span:last-child { margin-left:auto; color:#7b856d; }
-.express-hero-art { position:relative; padding:35px 0 24px; min-width:0; }
-.express-destination { display:flex; align-items:center; gap:13px; position:absolute; top:0; right:0; z-index:2; background:#233d35; color:#f5ead0; border:1px solid #233d35; padding:14px 20px; min-width:245px; border-radius:2px; transform:rotate(3deg); box-shadow:0 4px 0 #233d3512; }
-.express-destination > span { font:8px/1.4 monospace; letter-spacing:1.8px; }
-.express-destination strong { display:block; font:600 17px/1.5 var(--font-poppins),sans-serif; letter-spacing:-.4px; }
-.express-destination > svg:last-child { margin-left:auto; }
-.express-hero-photograph { height:433px; overflow:hidden; border-radius:3px 3px 70px 3px; background:#e8dcc2; transform:rotate(-2deg); border:5px solid #fff9ed; box-shadow:0 8px 24px #233d3515; }
-.express-hero-photograph img { width:100%; height:100%; object-fit:cover; object-position:59% center; }
-.express-fresh-stamp { position:absolute; left:-43px; bottom:6px; width:116px; height:116px; border-radius:50%; background:#ecd184; color:#233d35; border:5px double #4e6245; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; transform:rotate(-13deg); }
-.express-fresh-stamp > span { font:8px monospace; letter-spacing:1px; }
-.express-fresh-stamp > strong { font:600 10px monospace; letter-spacing:.5px; }
-.express-photo-label { display:flex; align-items:center; justify-content:flex-end; gap:10px; font:8px monospace; letter-spacing:1.4px; margin:18px 20px 0; color:#748067; }
-.express-photo-label i { width:30px; height:1px; background:#c95532; }
-@media(max-width:1000px) { .express-junction-hero h1 { font-size:80px; letter-spacing:-4px; } .express-hero-photograph { height:420px; } .express-fresh-stamp { width:96px; height:96px; left:-25px; } }
-@media(max-width:700px) {
-  .express-junction-hero { grid-template-columns:1fr; min-height:0; gap:10px; padding:25px 22px 24px; }
-  .express-junction-hero h1 { font-size:clamp(57px,17.3vw,90px); line-height:.95; letter-spacing:-3.5px; margin:23px 0 21px; }
-  .express-junction-hero .junction-hero-copy > p { font-size:12px; max-width:36ch; margin-bottom:22px; }
-  .express-station-coordinate { display:none; }
-  .express-hero-art { margin-top:24px; padding-top:28px; }
-  .express-destination { padding:11px 14px; min-width:220px; right:3px; top:0; }
-  .express-destination strong { font-size:16px; }
-  .express-hero-photograph { height:310px; border-radius:3px 3px 45px 3px; }
-  .express-fresh-stamp { width:92px; height:92px; left:-9px; bottom:13px; }
-  .express-fresh-stamp svg { width:22px; height:22px; }
-  .express-fresh-stamp > span { font-size:7px; }
-  .express-fresh-stamp > strong { font-size:9px; }
-  .express-photo-label { font-size:7px; gap:7px; margin:15px 4px 0; }
-}

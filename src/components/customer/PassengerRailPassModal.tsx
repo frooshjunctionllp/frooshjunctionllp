@@ -374,7 +374,7 @@ export const PassengerRailPassModal: React.FC<PassengerRailPassModalProps> = ({
                     </div>
                   </div>
                   <div className="bg-slate-950 text-amber-300 rounded-lg p-2 text-center">
-                    <div className="text-[10px] uppercase font-bold">Thick Shakes</div>
+                    <div className="text-[10px] uppercase font-bold">Shakes</div>
                     <div className="text-lg font-black text-red-400">
                       {currentPass.stats.totalShakes}
                     </div>
