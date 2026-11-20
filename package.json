@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test scripts/*.test.cjs"
+    "test": "node --test scripts/*.test.cjs",
+    "generate:review-qr": "node scripts/generate-review-qr.cjs"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
@@ -25,6 +26,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
+    "qrcode": "^1.5.4",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

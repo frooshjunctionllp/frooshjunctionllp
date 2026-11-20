@@ -19,8 +19,8 @@ const pixelFont = Press_Start_2P({
 });
 
 export const metadata: Metadata = {
-  title: "Froosh Junction - Juice & Shake Management POS",
-  description: "Enterprise Juice & Shake Sales, Customer Intelligence, Menu Management & Analytics",
+  title: "Froosh Junction | Fresh Juices & Shakes in Entally, Kolkata",
+  description: "Your next fresh stop in Entally, Kolkata. Explore fresh juices and creamy shakes, choose your size, and order from Froosh Junction.",
 };
 
 export default function RootLayout({

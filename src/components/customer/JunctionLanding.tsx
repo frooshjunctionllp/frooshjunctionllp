@@ -1,61 +1,65 @@
 "use client";
-import { drinkCopy } from "@/lib/drinkCopy";
 
-import { ArrowRight, ArrowUpRight, GlassWater, MapPin, Milk, TrainFront, Ticket, Check } from "lucide-react";
+import { GlassWater, Milk, MapPin, TrainFront, Ticket, ExternalLink, Leaf } from "lucide-react";
+import Image from "next/image";
+import { drinkCopy } from "@/lib/drinkCopy";
+import { googleProfile } from "@/lib/googleReviews";
 import type { Product } from "@/types";
+import { GoogleReviews, TestimonialVideos } from "./JunctionSocial";
 
 interface Props {
   products: Product[];
   onMenu: () => void;
   onChoose: (product: Product) => void;
   onVisit: () => void;
+  onOffers: () => void;
 }
 
-export function JunctionLanding({ products, onMenu, onChoose, onVisit }: Props) {
-  const available = products.filter((product) => product.isAvailable !== false && product.variants.some((variant) => variant.isAvailable !== false));
-  const featured = [...available.filter((product) => product.categoryId === "cat-juices").slice(0, 2), ...available.filter((product) => product.categoryId === "cat-shakes").slice(0, 2)];
-  const picks = featured.length ? featured : available.slice(0, 4);
+export function JunctionLanding({ products, onMenu, onChoose, onVisit, onOffers }: Props) {
+  const available = products.filter(p => p.isAvailable !== false && p.variants.some(v => v.isAvailable !== false));
+  const picks = available.slice(0, 4);
   return <>
-    <section className="junction-hero" aria-labelledby="junction-title">
-      <div className="junction-hero-copy">
-        <div className="station-label"><span className="station-signal" /> YOUR FRESH STOP · ENTALLY, KOLKATA</div>
-        <h1 id="junction-title">Good things<br />come to a <em>stop.</em></h1>
-        <p>Fresh fruit juices. Juices and shakes.<br />A little pause in your everyday journey.</p>
-        <div className="junction-hero-actions"><button className="station-button station-button-primary" onClick={onMenu}>Explore the menu <ArrowRight size={18} /></button><a href="#how-title" className="station-text-button">How to order <ArrowUpRight size={16} /></a></div>
-        <span className="junction-no-signup"><Check size={14} /> Browse first. Add your details at checkout.</span>
-        <div className="junction-location"><MapPin size={17} /><span>Padma Pukur, Entally<small>Your neighbourhood refreshment junction.</small></span></div>
+    <section className="junction-editorial-hero" aria-labelledby="junction-title">
+      <div className="editorial-hero-copy">
+        <span className="editorial-location">FROOSH JUNCTION <span>/</span> ENTALLY, KOLKATA</span>
+        <h1 id="junction-title">Take the<br /><em>fresh route.</em></h1>
+        <p>Fresh fruit juices. Thick, creamy shakes.<br />A good reason to pause, right here in Entally.</p>
+        <div className="editorial-hero-actions"><button className="station-button station-button-primary" onClick={onMenu}>Explore the menu</button><button className="editorial-visit" onClick={onVisit}>Visit the junction</button></div>
+        <div className="editorial-route"><TrainFront size={22} strokeWidth={1.4} /><div><span>YOUR EVERYDAY REFRESHMENT STOP</span><strong>Juices & shakes, served with railway soul.</strong></div></div>
       </div>
-      <div className="junction-hero-scene">
-        <div className="junction-station-sign"><span lang="bn">ফ্রুশ জংশন</span><strong>FROOSH JUNCTION</strong><small>ENTALLY · KOLKATA · FRSH</small></div>
-        <div className="junction-photo-frame">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=400&q=80" width={400} height={400} alt="Fresh mango drink with fruit at the Froosh refreshment stop" fetchPriority="high" />
-          <span className="junction-photo-caption"><GlassWater size={15} /> A refreshing change of pace.</span>
-        </div>
-        <div className="junction-ticket"><span className="junction-ticket-icon"><TrainFront size={24} /></span><div><small>YOUR NEXT FRESH STOP</small><strong>Something delicious.</strong><span>Fresh juices. Shakes. Good company.</span></div><b>01</b></div>
-        <span className="junction-scene-code">FJ / REFRESHMENT COACH</span>
-      </div>
+      <div className="editorial-hero-image"><Image sizes="(max-width: 700px) 100vw, 56vw" src="/images/junction-hero.png" alt="Fresh mango juice and a chocolate shake on a café counter beside a vintage green railway carriage" width={1536} height={1024} loading="eager" fetchPriority="high" /></div>
+      <div className="editorial-platform"><span>FRESHLY AT THE JUNCTION</span><span>JUICES <i /> SHAKES <i /> GOOD COMPANY</span><button onClick={onVisit}><MapPin size={15} /> ENTALLY · KOLKATA</button></div>
     </section>
-    <div className="junction-route-strip" aria-label="Our drink selection"><span><GlassWater size={17} /> Fresh juices</span><i /><span><Milk size={17} /> Shakes</span><i /><span><TrainFront size={17} /> One happy junction</span></div>
 
-    <section className="junction-how" aria-labelledby="how-title">
-      <div className="junction-section-heading"><div><span className="station-label">FIRST TIME AT THE JUNCTION?</span><h2 id="how-title">Three stops. One good sip.</h2></div><p>No railway timetable needed.<br />Here&apos;s how to order.</p></div>
-      <ol className="junction-steps">
-        <li><span className="junction-step-number">01</span><div><h3>Find your favourite</h3><p>Browse the menu and pick a juice or shake.</p></div></li>
-        <li><span className="junction-step-number">02</span><div><h3>Make it yours</h3><p>Choose your size, sweetness, ice, and extras.</p></div></li>
-        <li><span className="junction-step-number">03</span><div><h3>Order & collect</h3><p>Add your name and phone at checkout. Follow your order until it&apos;s ready.</p></div></li>
-      </ol>
-    </section>
+    <div className="junction-route-strip"><span><GlassWater /> Fresh fruit juices</span><span><Milk /> Creamy shakes</span><span><MapPin /> Made for Entally</span><span><Ticket /> Your daily happy stop</span></div>
 
     <section className="junction-featured" aria-labelledby="featured-title">
-      <div className="junction-section-heading"><div><span className="station-label">NOW ARRIVING</span><h2 id="featured-title">Pick your platform.</h2></div><button className="station-text-button" onClick={onMenu}>See the full menu <ArrowUpRight size={18} /></button></div>
-      <div className="junction-drink-grid">{picks.map((product, index) => <button className="junction-drink" key={product.id} onClick={() => onChoose(product)}>
-        <div className="junction-drink-photo">{product.imageUrl ? <img src={product.imageUrl} alt={drinkCopy(product.name)} loading="lazy" /> : <GlassWater size={44} />}<span>PLATFORM {String(index + 1).padStart(2, "0")}</span></div>
-        <div className="junction-drink-info"><span>{product.categoryId === "cat-shakes" ? "THE SHAKE LINE" : "THE FRESH LINE"}</span><h3>{drinkCopy(product.name)}</h3><div><strong>From ₹{Math.min(...product.variants.filter((variant) => variant.isAvailable !== false).map((variant) => variant.price))}</strong><span className="junction-drink-arrow"><ArrowUpRight size={19} /></span></div></div>
-      </button>)}</div>
-      {picks.length === 0 && <p className="junction-menu-empty">The menu is being refreshed. Please check back shortly.</p>}
+      <div className="junction-section-heading"><div><span className="station-label">FRESH ARRIVALS</span><h2 id="featured-title">A platform for<br /><em>every craving.</em></h2></div><div><p>Something fruity? Something creamy?<br />Your next favourite is waiting.</p><button className="station-text-button" onClick={onMenu}>Explore the full menu</button></div></div>
+      <div className="junction-drink-grid">{picks.map((product,index)=><article className="junction-drink" key={product.id}>
+        <button className="junction-drink-photo" onClick={()=>onChoose(product)} aria-label={`Choose size for ${drinkCopy(product.name)}`}>{product.imageUrl ? <img src={product.imageUrl} alt={drinkCopy(product.name)} loading="lazy" /> : <GlassWater size={65} />}</button>
+        <div className="junction-drink-info"><span>{product.categoryId === "cat-shakes" ? "THE SHAKE SPECIAL" : "THE FRESH EXPRESS"} / {String(index+1).padStart(2,"0")}</span><h3>{drinkCopy(product.name)}</h3><p>{drinkCopy(product.description)}</p><div className="drink-size-prices">{product.variants.filter(v=>v.isAvailable!==false).map(v=><span key={v.id}>{v.name}<strong>₹{v.price}</strong></span>)}</div><button className="drink-add" onClick={()=>onChoose(product)}>Choose size & add <span>+</span></button></div>
+      </article>)}</div>
+      {!picks.length && <div className="junction-menu-empty"><GlassWater size={32} /><h3>The next fresh arrival is on its way.</h3><p>We’re updating the menu. Stop by the counter for today’s selection.</p><button className="station-text-button" onClick={onMenu}>Check the menu</button></div>}
     </section>
 
-    <section className="junction-visit"><div className="junction-visit-sign"><TrainFront size={34} /><span>FROOSH<br />JUNCTION</span><small>FRSH</small></div><div><span className="station-label">A LITTLE KOLKATA. A LOT OF FRESH.</span><h2>Make us your usual stop.</h2><p>Inspired by the meeting points, familiar faces, and everyday journeys of Indian railway stations. Find your own little pause at our Entally counter.</p><button className="station-text-button" onClick={onVisit}>Find the junction <ArrowUpRight size={18} /></button></div><Ticket className="junction-visit-ticket" size={90} strokeWidth={1} /></section>
+    <section className="junction-story" id="junction-story" aria-labelledby="story-title">
+      <div className="story-sign"><TrainFront size={46} /><span>THODI SI<br /><strong>FRESHNESS.</strong><br />THODA SA<br /><strong>KOLKATA.</strong></span><div>WELCOME TO FROOSH JUNCTION</div></div>
+      <div className="story-copy"><span className="station-label">A BREAK WORTH STOPPING FOR</span><h2 id="story-title">Big city energy.<br /><em>Neighbourhood heart.</em></h2><p>Every station has its stories. Ours come with a fresh juice, a creamy shake, and the familiar faces of Entally.</p><p>We’ve borrowed the joy of an Indian railway junction and made a little place to pause. No ticket needed. Just bring your thirst.</p><button className="station-button story-button" onClick={onVisit}><MapPin size={18} /> Come find your fresh stop</button></div>
+    </section>
+
+    <section className="junction-how" aria-labelledby="how-title"><div className="junction-section-heading"><div><span className="station-label">NO COMPLICATED CONNECTIONS</span><h2 id="how-title">Three stops.<br /><em>One happy sip.</em></h2></div><TrainFront className="how-train-icon" size={64} strokeWidth={1.3} /></div><ol className="junction-steps">
+      <li><span className="junction-step-number"><GlassWater /></span><div><span className="step-stop">THE MENU STOP</span><h3>Find your favourite.</h3><p>Fresh juice or a creamy shake? Browse the menu and follow your craving.</p></div></li>
+      <li><span className="junction-step-number"><Milk /></span><div><span className="step-stop">THE SIZE STOP</span><h3>Pick your size.</h3><p>Choose from the available sizes. The price is right there beside each one.</p></div></li>
+      <li><span className="junction-step-number"><Ticket /></span><div><span className="step-stop">THE HAPPY STOP</span><h3>Order. Collect. Enjoy.</h3><p>Add your details at checkout, then follow your order until it’s ready.</p></div></li>
+    </ol></section>
+
+    <section className="junction-offer-stop"><Ticket size={58} strokeWidth={1.4} /><div><span className="station-label">A LITTLE EXTRA FOR THE JOURNEY</span><h2>Good things on the offers board.</h2><p>Take a look at the current deals, contests, and rewards.</p></div><button className="station-button" onClick={onOffers}>Check today’s offers</button></section>
+    <TestimonialVideos />
+    <GoogleReviews />
+
+
+
+    <section className="junction-last-stop"><div><span className="station-label">YOUR NEIGHBOURHOOD JUNCTION</span><h2>Same city.<br /><em>New favourite stop.</em></h2></div><div><p><MapPin /> Padma Pukur, Bihar Bus Stand<br />Entally, Kolkata · 700014</p><a href="tel:+918013726751">+91 80137 26751</a><button className="station-button" onClick={onVisit}>Location & contact <MapPin size={18} /></button></div><Leaf className="last-stop-leaf" size={160} strokeWidth={1} /></section>
+    <section className="junction-review-invite" aria-labelledby="review-invite-title"><div><span className="station-label">BEEN TO THE JUNCTION?</span><h2 id="review-invite-title">Leave a little love.<br /><em>Help the next person find us.</em></h2><p>Your honest review helps our neighbourhood junction grow. Scan the code or tap below to share your experience on Google.</p><a className="station-button station-button-primary" href={googleProfile.reviewUrl} target="_blank" rel="noreferrer">Review us on Google <ExternalLink size={18} /></a><a className="station-text-button" href={googleProfile.url} target="_blank" rel="noreferrer">Open our Google profile</a></div><a className="review-qr-ticket" href={googleProfile.reviewUrl} target="_blank" rel="noreferrer" aria-label="Open Froosh Junction on Google to leave a review"><div><TrainFront size={21} /><strong>FROOSH JUNCTION</strong></div><img src="/images/google-review-qr.svg" width={224} height={224} alt="Scan this QR code to review Froosh Junction on Google" loading="lazy" /><strong>SCAN. SIP. SAY HELLO.</strong><span>Point your phone camera here.</span></a></section>
   </>;
 }
