@@ -149,10 +149,6 @@
 .train-departure-heading { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:0 5vw; font:700 12px/1.7 monospace; letter-spacing:2px; }
 .train-departure-heading button { letter-spacing:0; font-size:12px; padding:7px 10px; border:1px solid #164735; }
 .train-loop { overflow:hidden; display:flex; width:100%; margin-top:12px; }
-.train-convoy { display:flex; flex:0 0 auto; animation:froosh-train 36s linear infinite; }
-.train-convoy svg { width:1200px; height:170px; flex-shrink:0; }
-.train-departure:hover .train-convoy,.train-departure.is-paused .train-convoy { animation-play-state:paused; }
-@keyframes froosh-train { from { transform:translateX(-100%); } to { transform:translateX(0); } }
 .junction-final-footer { background:#fff; color:#164735; padding:28px 4vw; font-size:13px; border-top:1px solid #164735; text-align:center; }
 .junction-final-footer p { margin-top:9px; color:#526c5f; font-size:12px; }
 .station-inner-screen { max-width:none; padding:35px 4vw 55px; }
@@ -201,7 +197,7 @@
   .video-intro { width:100%; flex-direction:row; align-items:center; justify-content:space-between; gap:15px; } .video-intro>p { font-size:13px!important; max-width:24ch; } .rail-controls button { width:39px; height:39px; } .rail-controls { gap:7px; } .video-rail { gap:15px; } .junction-video { flex-basis:72vw; max-width:300px; }
   .junction-reviews { grid-template-columns:1fr; padding:45px 22px; gap:30px; } .review-rail { display:flex; overflow-x:auto; overflow-y:visible; max-height:none; scroll-snap-type:x mandatory; padding:0 0 16px; } .google-review { flex:0 0 85%; scroll-snap-align:start; padding:23px; } .google-review>p { font-size:16px; } .google-score { margin-top:20px; }
   .junction-review-invite { grid-template-columns:1fr; padding:50px 22px 65px; gap:35px; } .junction-review-invite h2 { font-size:38px; } .junction-review-invite p { font-size:15px; } .review-qr-ticket { width:min(300px,95%); padding:22px; }
-  .junction-last-stop { grid-template-columns:1fr; padding:45px 22px; gap:30px; } .junction-last-stop h2 { font-size:43px; } .junction-last-stop p { font-size:15px; } .train-departure-heading { padding:0 22px; font-size:10px; letter-spacing:1px; } .train-departure-heading button { font-size:11px; white-space:nowrap; } .train-convoy svg { width:900px; height:128px; }
+  .junction-last-stop { grid-template-columns:1fr; padding:45px 22px; gap:30px; } .junction-last-stop h2 { font-size:43px; } .junction-last-stop p { font-size:15px; } .train-departure-heading { padding:0 22px; font-size:10px; letter-spacing:1px; } .train-departure-heading button { font-size:11px; white-space:nowrap; }
   .junction-final-footer { padding:25px 20px 100px; } .junction-final-footer span { font-size:11px; letter-spacing:0; } .junction-final-footer p { font-size:11px; line-height:1.8; } .station-inner-screen { padding:25px 18px 95px; } .station-active-order { font-size:12px; } .station-active-order strong { font-size:11px; } .size-dialog { padding:22px; } .size-dialog h2 { font-size:24px; } .size-options label { gap:6px; padding:12px 8px; } .size-options label.selected svg { display:none; }
 }
 @media(prefers-reduced-motion:reduce) { .client-station *,.client-station *::before,.client-station *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
@@ -235,3 +231,87 @@
 @media(min-width:1700px) { .editorial-hero-copy { min-height:680px; padding-block:80px; } }
 @media(max-width:1100px) and (min-width:701px) { .junction-editorial-hero { grid-template-columns:46% 54%; } .editorial-hero-copy { padding:45px 4vw; min-height:530px; } .editorial-hero-copy h1 { font-size:clamp(53px,6.3vw,70px); } .editorial-hero-copy>p { font-size:14px; } .editorial-hero-actions { gap:16px; } .editorial-location { font-size:9px; gap:8px; } .editorial-platform { font-size:9px; letter-spacing:.8px; } }
 @media(max-width:700px) { .junction-editorial-hero { grid-template-columns:1fr; } .editorial-hero-copy { padding:34px 24px 30px; min-height:0; } .editorial-location { font-size:9px; gap:9px; letter-spacing:1px; } .editorial-hero-copy h1 { font-size:clamp(56px,15vw,82px); margin:23px 0 20px; } .editorial-hero-copy>p { font-size:14px; line-height:1.8; } .editorial-hero-actions { margin-top:24px; gap:24px; } .editorial-hero-actions .station-button { font-size:13px; min-height:48px; padding:13px 20px; } .editorial-visit { font-size:12px; } .editorial-route { display:none; } .editorial-hero-image { height:auto; aspect-ratio:1.4; } .editorial-hero-image img { object-position:center; } .editorial-platform { padding:15px 24px; font-size:9px; letter-spacing:.7px; gap:10px; } .editorial-platform>span:first-child { display:none; } .editorial-platform>span:nth-child(2) { gap:8px; } .editorial-platform button { font-size:8px; gap:4px; } .editorial-platform button svg { width:12px; } }
+/* The menu and offers live in the homepage flow; anchors clear the sticky navigation. */
+#home,#menu,#offers,#visit { scroll-margin-top:105px; }
+.junction-menu-section,.junction-home-offers { padding:75px 5vw; min-width:0; }
+.junction-menu-section .junction-section-heading { align-items:center; }
+.junction-menu-search { display:flex; align-items:center; gap:12px; border-bottom:1px solid #16473580; padding:12px 0; width:min(100%,340px); }
+.junction-menu-search>svg { flex-shrink:0; }
+.junction-menu-search input { width:100%; min-width:0; background:transparent; outline:none; font-size:15px; min-height:28px; }
+.junction-menu-filters { display:flex; gap:12px; overflow-x:auto; padding:4px 4px 14px; scrollbar-width:thin; }
+.junction-menu-filters button { padding:12px 20px; border:1px solid #16473550; font-size:14px; white-space:nowrap; border-radius:3px; }
+.junction-menu-filters button[aria-pressed="true"] { background:#164735; color:#fff; border-color:#164735; }
+.junction-menu-filters button span { margin-left:12px; opacity:.7; }
+.menu-result-count { font-size:12px; color:#52675b; margin:8px 0 25px; }
+.junction-menu-section .junction-drink-grid { row-gap:40px; }
+.junction-menu-section .junction-drink { display:flex; flex-direction:column; }
+.junction-menu-section .junction-drink-info { display:flex; flex-direction:column; flex:1; }
+.junction-menu-section .drink-size-prices { margin-top:auto; padding-top:15px; }
+.junction-home-offers { background:#f2f6f1; }
+.junction-home-offers .font-mono { font-family:inherit; }
+.junction-home-offers [class*="shadow-"] { box-shadow:none; }
+.junction-home-offers :is(.border-2,.border-3,.border-4) { border-width:1px; border-color:#16473540; }
+.junction-home-offers [class*="bg-gradient-"] { background:#ffcf24; }
+.junction-home-offers :is(h2,h3) { text-transform:none; }
+.junction-home-offers .junction-section-heading>p { font-size:15px; line-height:1.8; }
+.junction-offers-empty { display:flex; align-items:center; gap:24px; padding:30px; background:#fff; border-top:2px solid #164735; }
+.junction-offers-empty>svg { flex-shrink:0; }
+.junction-offers-empty h3 { font-size:22px; font-weight:600; }
+.junction-offers-empty p { margin-top:8px; font-size:15px; line-height:1.8; color:#52675b; }
+.junction-offers-empty button { margin-left:auto; flex-shrink:0; }
+/* One complete train, then an empty interval after the final coach exits. */
+.train-loop { display:block; position:relative; container-type:inline-size; width:100%; height:172px; overflow:hidden; }
+.departure-train { position:absolute; left:100%; top:0; width:2300px; height:180px; animation:froosh-departure 36s linear infinite; will-change:transform; }
+.departure-train svg { display:block; width:100%; height:100%; max-width:none; }
+.departure-track { position:absolute; inset:auto 0 13px; height:12px; border-block:2px solid #164735; background:repeating-linear-gradient(90deg,transparent 0 19px,#16473580 19px 23px); }
+.train-departure.is-paused .departure-train { animation-play-state:paused; }
+@keyframes froosh-departure { 0% { transform:translateX(0); } 92%,100% { transform:translateX(calc(-100% - 100cqw)); } }
+.client-station { min-width:0; }
+.station-main,.station-main>div { min-width:0; }
+.station-main .junction-last-stop .station-button { width:fit-content; }
+@media(max-width:900px) { .junction-menu-section .junction-drink-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(max-width:700px) {
+  #home,#menu,#offers,#visit { scroll-margin-top:135px; }
+  .junction-menu-section,.junction-home-offers { padding:45px 20px; }
+  .junction-menu-section .junction-section-heading { align-items:flex-start; }
+  .junction-menu-search { width:100%; }
+  .junction-menu-search input { font-size:16px; min-height:32px; }
+  .junction-menu-filters { gap:8px; margin-inline:-4px; }
+  .junction-menu-filters button { min-height:44px; padding:10px 15px; font-size:13px; }
+  .junction-menu-section .junction-drink-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:30px 14px; }
+  .junction-menu-section .junction-drink-info h3 { font-size:16px; overflow-wrap:anywhere; }
+  .junction-menu-section .drink-add { min-height:44px; font-size:11px; }
+  .junction-menu-section .drink-size-prices>span { font-size:12px; }
+  .junction-offers-empty { padding:22px; flex-wrap:wrap; gap:17px; }
+  .junction-offers-empty>div { flex:1; min-width:160px; }
+  .junction-offers-empty h3 { font-size:20px; }
+  .junction-offers-empty p { font-size:14px; }
+  .junction-offers-empty button { margin-left:0; }
+  .junction-home-offers [class*="grid-cols-"] { min-width:0; }
+  .junction-home-offers :is(h2,h3,p,span) { overflow-wrap:anywhere; }
+  .departure-train { width:2070px; height:162px; }
+  .train-loop { height:154px; }
+  .departure-track { bottom:11px; }
+  .station-header :is(button,a) { min-height:42px; }
+  .station-cart { min-height:42px; }
+  .station-navigation button { min-height:44px; }
+  .junction-review-invite h2 { font-size:clamp(30px,8.5vw,38px); }
+  .junction-last-stop h2 { font-size:clamp(34px,10vw,43px); }
+}
+@media(max-width:359px) {
+  .station-header { padding-inline:14px; } .station-navigation { gap:7px; } .station-navigation button { font-size:11px; }
+  .station-announcement { padding-inline:14px; font-size:9px; }
+  .editorial-hero-copy { padding-inline:20px; } .editorial-hero-copy h1 { font-size:52px; }
+  .editorial-hero-actions { gap:16px; } .editorial-hero-actions .station-button { padding-inline:16px; }
+  .editorial-platform { padding-inline:14px; font-size:8px; letter-spacing:0; }
+  .junction-menu-section { padding-inline:16px; } .junction-menu-section .junction-drink-grid { gap:26px 12px; }
+  .junction-menu-section .drink-add { padding-inline:8px; font-size:10px; }
+  .junction-steps li { gap:12px; } .junction-step-number { width:42px; height:42px; }
+  .train-departure-heading { padding-inline:16px; font-size:9px; }
+}
+@media(prefers-reduced-motion:reduce) { .departure-train { left:0; transform:none; animation:none; } }
+@media(max-width:700px) { .junction-story h2 { font-size:clamp(30px,8.4vw,40px); } .junction-section-heading h2 { font-size:clamp(32px,9vw,42px); } .story-sign>span { font-size:clamp(25px,8vw,32px); } }
+@media(max-width:700px) { .junction-section-heading br { display:initial; } }
+@media(max-width:700px) { .client-station :is(input,select,textarea) { font-size:16px; } }
+.departure-track { bottom:4px; height:10px; }
+@media(max-width:700px) { .departure-track { bottom:1px; height:8px; } }

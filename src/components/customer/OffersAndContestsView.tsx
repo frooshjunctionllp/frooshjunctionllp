@@ -38,7 +38,7 @@ export const OffersAndContestsView: React.FC<OffersAndContestsViewProps> = ({
 
   const activeContests = offers.filter((o) => o.offerType === "contest_leaderboard");
   const otherOffers = offers.filter((o) => o.offerType !== "contest_leaderboard");
-  const currentOffer = offers.find((o) => o.id === selectedOfferId) || offers[0];
+  const currentOffer = activeContests.find((o) => o.id === selectedOfferId) || activeContests[0];
 
   useEffect(() => {
     if (currentOffer) {
@@ -56,6 +56,7 @@ export const OffersAndContestsView: React.FC<OffersAndContestsViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Contest Banner Hero */}
+      {activeContests.length > 0 && (
       <div className="border-4 border-slate-900 bg-gradient-to-br from-amber-400 via-amber-300 to-yellow-500 rounded-2xl p-5 sm:p-6 shadow-[5px_5px_0px_#0f172a] text-slate-950 font-mono relative overflow-hidden">
         {/* Railway Station Badge */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-950/30 pb-3 mb-4">
@@ -243,6 +244,7 @@ export const OffersAndContestsView: React.FC<OffersAndContestsViewProps> = ({
         )}
       </div>
 
+      )}
       {/* Other Offers Section: Happy Hours & Punchcard */}
       <div>
         <h3 className="text-sm font-black uppercase text-slate-900 font-mono mb-3 flex items-center gap-2">
