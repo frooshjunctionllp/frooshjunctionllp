@@ -68,7 +68,7 @@ export function JunctionLanding({
         <div className="editorial-hero-image">
           <Image
             sizes="(max-width: 700px) 100vw, 56vw"
-            src="/images/junction-hero.png"
+            src="/images/Hero_image.jpgg"
             alt="Fresh mango juice and a chocolate shake on a café counter beside a vintage green railway carriage"
             width={1536}
             height={1024}
