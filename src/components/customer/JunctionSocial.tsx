@@ -10,40 +10,80 @@ import {
 } from "lucide-react";
 import { googleProfile, googleReviews } from "@/lib/googleReviews";
 
-const videoUrl =[
+const videoUrl = [
   {
     src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521621/Apple_juice.mp4",
   },
-  {src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795436675/Cold_Coffee_vid.mp4",}
-  ,{src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521621/Pomegranate_juice.mp4",},
-  {src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521621/Pineapple_juice.mp4",},
-  {src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521622/Kiwi_shake.mp4",},
-  {src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521621/Khajur_shake.mp4",},
-  {src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521623/Mix_fruit_juice.mp4",},
-{src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521621/Blueberry_shake.mp4",},
-{src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521620/Oreo_shake.mp4",},
-{SRC: "https://res.cloudinary.com/l5vaptox/video/upload/v1795786986/mango-SHAKE.mp4",},
-
-
-    
-
-]
-const videoPoster =[
   {
-    poster: "https://res.cloudinary.com/l5vaptox/image/upload/v1795783796/Screenshot_2026-11-27_181921.png",}
-    , {poster:"https://res.cloudinary.com/l5vaptox/image/upload/v1795784154/Screenshot_2026-11-27_182535.png",},
-  {poster: "https://res.cloudinary.com/l5vaptox/image/upload/v1795784418/Screenshot_2026-11-27_183005.png",},
-  {poster: "https://res.cloudinary.com/l5vaptox/image/upload/v1795784541/Screenshot_2026-11-27_183212.png"},
-  {poster: "https://res.cloudinary.com/l5vaptox/image/upload/v1795785005/Screenshot_2026-11-27_183954.png",},
-  {poster: "https://res.cloudinary.com/l5vaptox/image/upload/v1795785046/Screenshot_2026-11-27_184032.png",},
-  {poster: "https://res.cloudinary.com/l5vaptox/image/upload/v1795785211/Screenshot_2026-11-27_184316.png",},
-  {poster: "https://res.cloudinary.com/l5vaptox/image/upload/v1795785286/Screenshot_2026-11-27_184435.png",},
-  {poster: "https://res.cloudinary.com/l5vaptox/image/upload/v1795785433/Screenshot_2026-11-27_184702.png",},
-  {POSTER: "https://res.cloudinary.com/l5vaptox/image/upload/v1795786874/Tropical_Mango_Shake_Poster.png",},
-
-
-
-]
+    src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795436675/Cold_Coffee_vid.mp4",
+  },
+  {
+    src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521621/Pomegranate_juice.mp4",
+  },
+  {
+    src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521621/Pineapple_juice.mp4",
+  },
+  {
+    src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521622/Kiwi_shake.mp4",
+  },
+  {
+    src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521621/Khajur_shake.mp4",
+  },
+  {
+    src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521623/Mix_fruit_juice.mp4",
+  },
+  {
+    src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521621/Blueberry_shake.mp4",
+  },
+  {
+    src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795521620/Oreo_shake.mp4",
+  },
+  {
+    src: "https://res.cloudinary.com/l5vaptox/video/upload/v1795786986/mango-SHAKE.mp4",
+  },
+];
+const videoPoster = [
+  {
+    poster:
+      "https://res.cloudinary.com/l5vaptox/image/upload/v1795783796/Screenshot_2026-11-27_181921.png",
+  },
+  {
+    poster:
+      "https://res.cloudinary.com/l5vaptox/image/upload/v1795784154/Screenshot_2026-11-27_182535.png",
+  },
+  {
+    poster:
+      "https://res.cloudinary.com/l5vaptox/image/upload/v1795784418/Screenshot_2026-11-27_183005.png",
+  },
+  {
+    poster:
+      "https://res.cloudinary.com/l5vaptox/image/upload/v1795784541/Screenshot_2026-11-27_183212.png",
+  },
+  {
+    poster:
+      "https://res.cloudinary.com/l5vaptox/image/upload/v1795785005/Screenshot_2026-11-27_183954.png",
+  },
+  {
+    poster:
+      "https://res.cloudinary.com/l5vaptox/image/upload/v1795785046/Screenshot_2026-11-27_184032.png",
+  },
+  {
+    poster:
+      "https://res.cloudinary.com/l5vaptox/image/upload/v1795785211/Screenshot_2026-11-27_184316.png",
+  },
+  {
+    poster:
+      "https://res.cloudinary.com/l5vaptox/image/upload/v1795785286/Screenshot_2026-11-27_184435.png",
+  },
+  {
+    poster:
+      "https://res.cloudinary.com/l5vaptox/image/upload/v1795785433/Screenshot_2026-11-27_184702.png",
+  },
+  {
+    poster:
+      "https://res.cloudinary.com/l5vaptox/image/upload/v1795786874/Tropical_Mango_Shake_Poster.png",
+  },
+];
 
 function VideoPreview({ index }: { index: number }) {
   const video = useRef<HTMLVideoElement>(null);
