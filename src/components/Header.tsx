@@ -103,7 +103,7 @@ export function Header({ activeTab, setActiveTab, stats, currentUser, onOpenAuth
     <aside ref={navigation} id="dashboard-navigation" className={`dashboard-sidebar ${navigationOpen ? "is-open" : ""}`} aria-label="Workspace navigation" role={navigationOpen ? "dialog" : undefined} aria-modal={navigationOpen || undefined}>
       <div className="dashboard-brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png" alt="Froosh Junction" />
+        <img src="https://res.cloudinary.com/l5vaptox/image/upload/v1795431381/Juice_page_1.png" alt="Froosh Junction" />
         <button className="dashboard-nav-close" onClick={closeNavigation} aria-label="Close navigation"><X size={19} /></button>
       </div>
       <div className="dashboard-location"><span className="dashboard-location-icon"><Store size={17} /></span><div><strong>Entally, Kolkata</strong><span>{isAdmin ? "Store management" : "Staff terminal"}</span></div><span className="dashboard-status-dot" /></div>

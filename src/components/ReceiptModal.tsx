@@ -55,7 +55,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
           <div className="text-center border-b border-dashed border-slate-300 pb-4 mb-4">
             <div className="flex justify-center mb-1.5">
               <img
-                src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
+                src="https://res.cloudinary.com/l5vaptox/image/upload/v1795431381/Juice_page_1.png"
                 alt="Froosh Junction"
                 className="h-10 w-auto object-contain"
               />

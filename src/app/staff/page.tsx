@@ -91,7 +91,7 @@ export default function StaffPortalPage() {
         <div className="text-center space-y-4 font-mono max-w-sm mx-auto">
           <div className="flex justify-center mb-2">
             <img
-              src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
+              src="https://res.cloudinary.com/l5vaptox/image/upload/v1795431381/Juice_page_1.png"
               alt="Froosh Junction"
               className="h-16 w-auto object-contain animate-pulse"
             />

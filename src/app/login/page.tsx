@@ -149,7 +149,7 @@ export default function CustomerLoginPage() {
           <div className="text-center mb-6">
             <div className="flex justify-center mb-3">
               <img
-                src="https://res.cloudinary.com/l5vaptox/image/upload/v1793879357/Froosh_Junction_Juice_Full_Logo.png"
+                src="https://res.cloudinary.com/l5vaptox/image/upload/v1795431381/Juice_page_1.png"
                 alt="Froosh Junction"
                 className="h-16 w-auto object-contain drop-shadow-sm"
               />
