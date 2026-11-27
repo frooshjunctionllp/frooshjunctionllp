@@ -40,7 +40,7 @@ const videoPoster =[
   {poster: "https://res.cloudinary.com/l5vaptox/image/upload/v1795785286/Screenshot_2026-11-27_184435.png",},
   {poster: "https://res.cloudinary.com/l5vaptox/image/upload/v1795785433/Screenshot_2026-11-27_184702.png",},
   {POSTER: "https://res.cloudinary.com/l5vaptox/image/upload/v1795786874/Tropical_Mango_Shake_Poster.png",},
-  
+
 
 
 ]
@@ -89,7 +89,7 @@ function VideoPreview({ index }: { index: number }) {
         {failed && (
           <a
             className="video-fallback"
-            href={videoUrl}
+            href={videoUrl[index]?.src}
             target="_blank"
             rel="noreferrer"
           >
